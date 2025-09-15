@@ -1,5 +1,6 @@
 // lib/views/tela_login.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import 'tela_cadastro.dart';
@@ -133,10 +134,10 @@ class _TelaLoginState extends State<TelaLogin> {
                   ),
                 const SizedBox(height: 16), // Espaçamento
                 ElevatedButton.icon(
-                  icon: Image.asset(
-                    'assets/images/google_logo_light.png', // VOCÊ PRECISARÁ ADICIONAR ESTA IMAGEM
-                    height: 24.0,
-                    width: 24.0,
+                  icon: SvgPicture.asset(
+                    'assets/images/google_logo.svg', // VOCÊ PRECISARÁ ADICIONAR ESTA IMAGEM
+                    height: 30.0,
+                    width: 30.0,
                   ),
                   label: const Text('Entrar com Google'),
                   style: ElevatedButton.styleFrom(
