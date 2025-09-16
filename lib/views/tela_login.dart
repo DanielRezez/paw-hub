@@ -56,123 +56,148 @@ class _TelaLoginState extends State<TelaLogin> {
 
   @override
   Widget build(BuildContext context) {
-    // Ouve o status do AuthViewModel para mostrar o loading ou o botão
     final authStatus = context.watch<AuthViewModel>().status;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login - PawHub'),
-        automaticallyImplyLeading: false, // Remove o botão de voltar, já que é a tela inicial para não logados
-      ),
-      body: Center( // Centraliza o conteúdo na tela
-        child: SingleChildScrollView( // Permite rolar se o conteúdo for maior que a tela
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey, // Associa a chave ao formulário
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFA8E6CF), Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, // Centraliza verticalmente
-              crossAxisAlignment: CrossAxisAlignment.stretch, // Estica os filhos horizontalmente
-              children: <Widget>[
-                // TODO: Adicionar um logo do PawHub aqui seria legal!
-                // Image.asset('assets/images/pawhub_logo.png', height: 100),
-                // SizedBox(height: 48),
-
-                TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'E-mail',
-                    hintText: 'seuemail@exemplo.com',
-                    prefixIcon: Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(),
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'PetHub',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF388E3C), // Verde escuro para contraste
                   ),
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next, // Pula para o próximo campo
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Por favor, insira seu e-mail.';
-                    }
-                    // Validação simples de e-mail
-                    if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
-                      return 'Por favor, insira um e-mail válido.';
-                    }
-                    return null; // Nulo significa que é válido
-                  },
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Senha',
-                    prefixIcon: Icon(Icons.lock_outline),
-                    border: OutlineInputBorder(),
-                    // TODO: Adicionar um botão de mostrar/esconder senha seria uma boa melhoria
+                const SizedBox(height: 32),
+                Container(
+                  padding: const EdgeInsets.all(24.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  obscureText: true, // Esconde a senha
-                  textInputAction: TextInputAction.done, // Indica que o formulário terminou
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, insira sua senha.';
-                    }
-                    if (value.length < 6) {
-                      return 'A senha deve ter pelo menos 6 caracteres.';
-                    }
-                    return null;
-                  },
-                  onFieldSubmitted: (_) => _submitForm(), // Permite submeter com o "enter" do teclado
-                ),
-                const SizedBox(height: 24),
-                if (authStatus == AuthStatus.authenticating)
-                  const Center(child: CircularProgressIndicator())
-                else
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      textStyle: const TextStyle(fontSize: 16),
-                    ),
-                    onPressed: _submitForm, // Chama a função de submissão
-                    child: const Text('Entrar'),
-                  ),
-                const SizedBox(height: 16), // Espaçamento
-                ElevatedButton.icon(
-                  icon: SvgPicture.asset(
-                    'assets/images/google_logo.svg', // VOCÊ PRECISARÁ ADICIONAR ESTA IMAGEM
-                    height: 30.0,
-                    width: 30.0,
-                  ),
-                  label: const Text('Entrar com Google'),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.black87, backgroundColor: Colors.white, // Cores típicas para botão Google
-                    minimumSize: const Size(double.infinity, 50), // Faz o botão ocupar a largura
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                      side: const BorderSide(color: Colors.grey),
-                    ),
-                  ),
-                  onPressed: authStatus == AuthStatus.authenticating
-                      ? null // Desabilita o botão enquanto estiver autenticando
-                      : () async {
-                    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-                    bool success = await authViewModel.signInWithGoogle();
-
-                    if (!success && authViewModel.errorMessage != null && mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(authViewModel.errorMessage!),
-                          backgroundColor: Colors.redAccent,
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Campos de e-mail e senha
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: const InputDecoration(
+                            labelText: 'E-mail',
+                            hintText: 'seuemail@exemplo.com',
+                            prefixIcon: Icon(Icons.email_outlined),
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Por favor, insira seu e-mail.';
+                            }
+                            if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)) {
+                              return 'Por favor, insira um e-mail válido.';
+                            }
+                            return null;
+                          },
                         ),
-                      );
-                    }
-                    // Se o login deu certo, o Wrapper cuidará da navegação.
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const TelaCadastro()),
-                    );
-                  },
-                  child: const Text('Não tem uma conta? Cadastre-se'),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _passwordController,
+                          decoration: const InputDecoration(
+                            labelText: 'Senha',
+                            prefixIcon: Icon(Icons.lock_outline),
+                            border: OutlineInputBorder(),
+                          ),
+                          obscureText: true,
+                          textInputAction: TextInputAction.done,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, insira sua senha.';
+                            }
+                            if (value.length < 6) {
+                              return 'A senha deve ter pelo menos 6 caracteres.';
+                            }
+                            return null;
+                          },
+                          onFieldSubmitted: (_) => _submitForm(),
+                        ),
+                        const SizedBox(height: 24),
+                        if (authStatus == AuthStatus.authenticating)
+                          const Center(child: CircularProgressIndicator())
+                        else
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16.0),
+                              textStyle: const TextStyle(fontSize: 16),
+                            ),
+                            onPressed: _submitForm,
+                            child: const Text('Entrar'),
+                          ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          icon: SvgPicture.asset(
+                            'assets/images/google_logo.svg',
+                            height: 30.0,
+                            width: 30.0,
+                          ),
+                          label: const Text('Entrar com Google'),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.black87,
+                            backgroundColor: Colors.white,
+                            minimumSize: const Size(double.infinity, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                              side: const BorderSide(color: Colors.grey),
+                            ),
+                          ),
+                          onPressed: authStatus == AuthStatus.authenticating
+                              ? null
+                              : () async {
+                            final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+                            bool success = await authViewModel.signInWithGoogle();
+                            if (!success && authViewModel.errorMessage != null && mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(authViewModel.errorMessage!),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (context) => const TelaCadastro()),
+                            );
+                          },
+                          child: const Text('Não tem uma conta? Cadastre-se'),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
