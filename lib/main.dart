@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:projeto_integrador2/views/wrapper.dart';
+import 'package:projeto_integrador2/viewmodels/carregamento_viewmodel.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:projeto_integrador2/viewmodels/auth_viewmodel.dart';
+import 'package:projeto_integrador2/views/wrapper.dart';
+import 'views/tela_login.dart';
 import 'viewmodels/inicial_viewmodel.dart'; // Corrigido para seu ViewModel
 import 'views/tela_inicial.dart';
 
@@ -8,11 +15,16 @@ import 'views/tela_inicial.dart';
 import 'package:projeto_integrador2/utils/cores.dart';
 import 'package:projeto_integrador2/utils/tipografia.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  print('Firebase inicializado com sucesso!');
+
   runApp(
-    // O Provider "servindo" sua ViewModel para o app
-    ChangeNotifierProvider(
-      create: (context) => inicialViewModel(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AuthViewModel()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -42,7 +54,7 @@ class MyApp extends StatelessWidget {
           foregroundColor: corOffWhite,
         ),
       ),
-      home: const TelaInicial(), // Não precisa mais do title aqui
+      home: Wrapper(),
     );
   }
 }

@@ -3,6 +3,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
 import 'package:projeto_integrador2/viewmodels/inicial_viewmodel.dart'; // IMPORTA O VIEWMODEL
 import 'package:projeto_integrador2/utils/cores.dart';
+// lib/views/tela_inicial.dart
+import '../viewmodels/auth_viewmodel.dart';
 
 class TelaInicial extends StatelessWidget {
   const TelaInicial({super.key});
