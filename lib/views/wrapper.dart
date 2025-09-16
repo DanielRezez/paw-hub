@@ -1,11 +1,10 @@
 // lib/views/wrapper.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../viewmodels/auth_viewmodel.dart';
-import 'tela_login.dart';       // Sua futura tela de login
-import 'tela_inicial.dart';    // Sua tela principal quando logado
-// Se você tiver uma tela de carregamento específica para autenticação, pode usá-la aqui.
-// import 'tela_carregamento_auth.dart';
+import 'package:projeto_integrador2/viewmodels/auth_viewmodel.dart';
+import 'package:projeto_integrador2/viewmodels/inicial_viewmodel.dart'; // Importar
+import 'package:projeto_integrador2/views/tela_inicial.dart';
+import 'package:projeto_integrador2/views/tela_login.dart';
 
 class Wrapper extends StatelessWidget {
   const Wrapper({super.key});
@@ -26,17 +25,18 @@ class Wrapper extends StatelessWidget {
           ),
         );
       case AuthStatus.authenticated:
-      // Se autenticado e o usuário existe, mostra a tela inicial
         if (authViewModel.user != null) {
-          // TODO: Certifique-se que você tem uma TelaInicial criada
-          return TelaInicial(); // Adapte para o nome da sua tela principal
+          return ChangeNotifierProvider<inicialViewModel>(
+            create: (context) {
+              return inicialViewModel();
+            },
+            child: const TelaInicial(),
+          );
         }
-        // Se por algum motivo o status é autenticado mas user é null, vai para o login (fallback)
-        return TelaLogin(); // Adapte para o nome da sua tela de login
+        return TelaLogin();
       case AuthStatus.unauthenticated:
-      case AuthStatus.error: // Se não autenticado ou deu erro, mostra a tela de login
-      // TODO: Certifique-se que você tem uma TelaLogin criada
-        return TelaLogin(); // Adapte para o nome da sua tela de login
+      case AuthStatus.error:
+        return TelaLogin();
     }
   }
 }

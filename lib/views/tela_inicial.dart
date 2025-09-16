@@ -13,8 +13,6 @@ class TelaInicial extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = Provider.of<inicialViewModel>(context);
 
-    // O build principal continua o mesmo...
-    // Só colei o código todo pra garantir que você tenha a versão completa.
     return Scaffold(
       backgroundColor: corOffWhite,
       appBar: AppBar(
@@ -119,7 +117,9 @@ class TelaInicial extends StatelessWidget {
           ),
         ],
         currentIndex: viewModel.selectedIndex,
-        onTap: viewModel.onItemTapped,
+        onTap: (index) {
+          viewModel.onItemTapped(index, context);
+        },
         selectedItemColor: corPretoAzulado,
         unselectedItemColor: Colors.grey.shade500,
         backgroundColor: Colors.white,
