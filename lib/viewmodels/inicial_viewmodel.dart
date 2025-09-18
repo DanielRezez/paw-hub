@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:projeto_integrador2/views/tela_configuracoes.dart';
+import 'package:provider/provider.dart';
+
+import 'auth_viewmodel.dart';
+import 'configuracoes_viewmodel.dart';
 
 class inicialViewModel extends ChangeNotifier {
   // ===================================================================
@@ -88,11 +92,20 @@ class inicialViewModel extends ChangeNotifier {
       // Navigator.push(context, MaterialPageRoute(builder: (_) => HistoricoScreen()));
         print("Item 'Histórico' selecionado.");
         break;
-      case 3: // <<---- ESTE É O SEU ITEM DE CONFIGURAÇÕES
+      case 3: // Config
         print("Item 'Config' selecionado. Navegando para TelaConfiguracoes...");
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const TelaConfiguracoes()),
+          MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider<ConfiguracoesViewModel>(
+              create: (context) {
+                // Obtém o AuthViewModel já fornecido para passá-lo ao ConfiguracoesViewModel
+                final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+                return ConfiguracoesViewModel(authViewModel);
+              },
+              child: TelaConfiguracoes(), // Remova o const se não for mais necessário
+            ),
+          ),
         );
         // IMPORTANTE: Se você navega para uma nova tela CHEIA (como TelaConfiguracoes),
         // você geralmente NÃO quer que o _selectedIndex permaneça 3 quando voltar,
