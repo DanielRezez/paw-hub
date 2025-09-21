@@ -62,82 +62,44 @@ class InicialViewModel extends ChangeNotifier {
   // ===================================================================
 
   // Chamado quando o usuário clica em um item da barra de navegação
-  void onItemTapped(int index, BuildContext context) { // <<< ADICIONE BuildContext context
-    if (_selectedIndex == index && index == 3) {
-      // Se o usuário já está na tela de configurações (ou a lógica que a representa)
-      // e clica nela de novo, não faz nada para evitar empilhar a mesma tela várias vezes.
-      // Você pode ajustar essa lógica se precisar de um comportamento diferente.
+  void onItemTapped(int index, BuildContext context) {
+    // Se for Configurações (índice 3), apenas navega para a tela, sem alterar _selectedIndex
+    if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChangeNotifierProvider<ConfiguracoesViewModel>(
+            create: (context) {
+              final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+              return ConfiguracoesViewModel(authViewModel);
+            },
+            child: TelaConfiguracoes(),
+          ),
+        ),
+      );
+      // Não chamamos notifyListeners, porque a barra principal não muda
       return;
     }
 
-    _selectedIndex = index;
+    // Para abas normais (0, 1, 2), atualiza o índice e notifica a UI
+    if (_selectedIndex != index) {
+      _selectedIndex = index;
+      notifyListeners();
+    }
 
+    // Debug opcional
     switch (index) {
       case 0:
-      // Lógica para Visão Geral (índice 0)
-      // Se a TelaInicial já mostra a "Visão Geral" por padrão,
-      // você pode não precisar fazer nada aqui, ou pode ter um widget específico
-      // para exibir no corpo da TelaInicial.
         print("Item 'Visão Geral' selecionado.");
         break;
       case 1:
-      // Lógica para Agenda (índice 1)
-      // Exemplo: Navegar para uma tela de Agenda
-      // Navigator.push(context, MaterialPageRoute(builder: (_) => AgendaScreen()));
         print("Item 'Agenda' selecionado.");
         break;
       case 2:
-      // Lógica para Histórico (índice 2)
-      // Exemplo: Navegar para uma tela de Histórico
-      // Navigator.push(context, MaterialPageRoute(builder: (_) => HistoricoScreen()));
         print("Item 'Histórico' selecionado.");
-        break;
-      case 3: // Config
-        print("Item 'Config' selecionado. Navegando para TelaConfiguracoes...");
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChangeNotifierProvider<ConfiguracoesViewModel>(
-              create: (context) {
-                // Obtém o AuthViewModel já fornecido para passá-lo ao ConfiguracoesViewModel
-                final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-                return ConfiguracoesViewModel(authViewModel);
-              },
-              child: TelaConfiguracoes(), // Remova o const se não for mais necessário
-            ),
-          ),
-        );
-        // IMPORTANTE: Se você navega para uma nova tela CHEIA (como TelaConfiguracoes),
-        // você geralmente NÃO quer que o _selectedIndex permaneça 3 quando voltar,
-        // pois a TelaInicial será a tela "por baixo".
-        // Considere resetar o _selectedIndex para o índice da tela principal (ex: 0)
-        // APÓS o Navigator.push, ou não atualizar o _selectedIndex aqui se a navegação
-        // for para uma tela completamente diferente que cobre a TelaInicial.
-        // Se a TelaConfiguracoes for uma sub-view DENTRO da TelaInicial, então manter
-        // _selectedIndex = 3 faz sentido.
-        //
-        // Para o seu caso, como TelaConfiguracoes é uma nova tela via MaterialPageRoute,
-        // o BottomNavigationBar da TelaInicial não será visível na TelaConfiguracoes.
-        // Quando você voltar da TelaConfiguracoes, o _selectedIndex ainda será 3,
-        // o que pode ou não ser o desejado.
-        //
-        // Uma abordagem comum é que o BottomNavigationBar controle apenas as seções
-        // PRINCIPAIS da tela atual. Se "Configurações" é uma tela totalmente separada,
-        // talvez não devesse mudar o selectedIndex da TelaInicial, ou deveria
-        // ser acessada por um botão diferente (ex: no AppBar).
-        //
-        // Se você quer que o item "Config" fique selecionado E navegue, o código atual
-        // está bom. Apenas esteja ciente do comportamento do selectedIndex ao voltar.
         break;
       default:
         print("Índice de item desconhecido: $index");
     }
-
-    // Você só precisa chamar notifyListeners se a própria TelaInicial
-    // muda sua UI com base no _selectedIndex (além do destaque do BottomNav).
-    // Se você está navegando para telas completamente diferentes,
-    // o notifyListeners aqui pode não ser estritamente necessário para a navegação em si,
-    // mas ainda é útil para atualizar o item destacado no BottomNav.
-    notifyListeners();
   }
 }
