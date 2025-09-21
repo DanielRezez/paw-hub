@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:projeto_integrador2/viewmodels/configuracoes_viewmodel.dart';
+import 'package:projeto_integrador2/views/tela_conta.dart';
 
 // Remova StatefulWidget se não precisar mais de estado local complexo
 // class TelaConfiguracoes extends StatefulWidget {
@@ -78,48 +79,19 @@ class TelaConfiguracoes extends StatelessWidget { // Transformado em StatelessWi
 
           const Divider(),
 
-          // Seção: Conta
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              'Conta',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ),
           ListTile(
-            title: const Text('Sair da conta'),
-            trailing: const Icon(Icons.logout),
-            onTap: () async { // Adicione async se o método do viewModel for async
-              // Mostrar diálogo de confirmação (pode ser movido para o ViewModel também, se preferir)
-              final bool? confirmarLogout = await showDialog<bool>(
-                context: context,
-                builder: (BuildContext dialogContext) {
-                  return AlertDialog(
-                    title: const Text('Confirmar Logout'),
-                    content: const Text('Você tem certeza que deseja sair?'),
-                    actions: <Widget>[
-                      TextButton(
-                        child: const Text('Cancelar'),
-                        onPressed: () {
-                          Navigator.of(dialogContext).pop(false);
-                        },
-                      ),
-                      TextButton(
-                        child: Text('Sair', style: TextStyle(color: Colors.red.shade700)),
-                        onPressed: () {
-                          Navigator.of(dialogContext).pop(true);
-                        },
-                      ),
-                    ],
-                  );
-                },
+            title: const Text('Conta'),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ChangeNotifierProvider.value(
+                    value: viewModel,
+                    child: const TelaConta(),
+                  ),
+                ),
               );
-
-              if (confirmarLogout == true) {
-                await viewModel.logout();
-                // Remove todas as telas da pilha até a primeira (Wrapper)
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              }
             },
           ),
         ],
