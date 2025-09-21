@@ -116,8 +116,9 @@ class TelaConfiguracoes extends StatelessWidget { // Transformado em StatelessWi
               );
 
               if (confirmarLogout == true) {
-                // CHAMA O VIEWMODEL (que internamente chama o AuthViewModel)
                 await viewModel.logout();
+                // Remove todas as telas da pilha até a primeira (Wrapper)
+                Navigator.of(context).popUntil((route) => route.isFirst);
               }
             },
           ),

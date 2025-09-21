@@ -11,7 +11,7 @@ class TelaInicial extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<inicialViewModel>(context);
+    final viewModel = Provider.of<InicialViewModel>(context);
 
     return Scaffold(
       backgroundColor: corOffWhite,

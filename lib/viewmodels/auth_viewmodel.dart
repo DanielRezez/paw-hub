@@ -105,8 +105,17 @@ class AuthViewModel with ChangeNotifier {
 
   // Função para FAZER LOGOUT (sair)
   Future<void> signOut() async {
-    await _auth.signOut();
-    // O _onAuthStateChanged será chamado automaticamente.
+    try {
+      await _auth.signOut();
+      _user = null;
+      _status = AuthStatus.unauthenticated;
+      _errorMessage = null;
+      notifyListeners();
+    } catch (e) {
+      _status = AuthStatus.error;
+      _errorMessage = "Erro ao tentar sair.";
+      notifyListeners();
+    }
   }
 
   // Função auxiliar para transformar erros técnicos em mensagens amigáveis
@@ -142,6 +151,7 @@ class AuthViewModel with ChangeNotifier {
       // Se o usuário cancelou o fluxo de login do Google
       if (googleUser == null) {
         _status = AuthStatus.unauthenticated; // Ou manter o status anterior, dependendo da sua lógica
+        _errorMessage = null;
         notifyListeners();
         return false;
       }

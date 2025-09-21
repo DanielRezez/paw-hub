@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'auth_viewmodel.dart';
 import 'configuracoes_viewmodel.dart';
 
-class inicialViewModel extends ChangeNotifier {
+class InicialViewModel extends ChangeNotifier {
   // ===================================================================
   // ESTADO E DADOS (A "fonte da verdade" da tela)
   // ===================================================================
