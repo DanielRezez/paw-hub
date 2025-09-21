@@ -23,7 +23,7 @@ class TelaInicial extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'PetCare Monitor',
+              'PetHub Monitor',
               style: TextStyle(
                 color: corPretoAzulado,
                 fontSize: 22,
