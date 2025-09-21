@@ -103,18 +103,30 @@ class AuthViewModel with ChangeNotifier {
     }
   }
 
-  // Função para FAZER LOGOUT (sair)
-  Future<void> signOut() async {
+  // Logout do Google
+  Future<void> signOutGoogle() async {
+    final googleSignIn = GoogleSignIn();
+    if (await googleSignIn.isSignedIn()) {
+      await googleSignIn.signOut();
+      print("Logout do Google realizado.");
+    }
+  }
+
+  // Logout completo: Firebase + Google
+  Future<void> signOutAll() async {
     try {
-      await _auth.signOut();
+      await _auth.signOut();      // Logout Firebase
+      await signOutGoogle();      // Logout Google
       _user = null;
       _status = AuthStatus.unauthenticated;
       _errorMessage = null;
-      notifyListeners();
+      notifyListeners();          // Wrapper vai detectar e mostrar TelaLogin
+      print("Logout completo realizado.");
     } catch (e) {
       _status = AuthStatus.error;
       _errorMessage = "Erro ao tentar sair.";
       notifyListeners();
+      print("Erro no logout: $e");
     }
   }
 
