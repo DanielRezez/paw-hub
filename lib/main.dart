@@ -5,6 +5,7 @@ import 'package:projeto_integrador2/viewmodels/carregamento_viewmodel.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:projeto_integrador2/viewmodels/auth_viewmodel.dart';
+import 'package:projeto_integrador2/viewmodels/sensor_viewmodel.dart'; // Adicionado
 import 'package:projeto_integrador2/views/wrapper.dart';
 import 'views/tela_login.dart';
 import 'viewmodels/inicial_viewmodel.dart'; // Corrigido para seu ViewModel
@@ -24,6 +25,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AuthViewModel()),
+        ChangeNotifierProvider(create: (context) => SensorViewModel()), // Adicionado
       ],
       child: const MyApp(),
     ),
@@ -45,8 +47,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSwatch().copyWith(
           primary: corBeringela, // Usado em alguns lugares
           secondary: corPesce,
-          surface: corOffWhite, // Cor de fundo de cards, etc
-          background: corOffWhite, // Cor de fundo principal
+          surface: corOffWhite, // Cor de fundo principal
           onSurface: const Color(0xFF0D1B2A), // Cor para textos em cima de 'surface'
         ),
         appBarTheme: const AppBarTheme(
