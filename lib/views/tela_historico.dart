@@ -22,12 +22,41 @@ class TelaHistorico extends StatelessWidget {
         ),
         body: Consumer<HistoricoViewModel>(
           builder: (context, viewModel, child) {
+            final bool isDailyView = viewModel.currentView == ChartViewType.daily;
+
+            final feedData = isDailyView ? viewModel.feedDataDaily : viewModel.feedDataWeekly;
+            final waterData = isDailyView ? viewModel.waterDataDaily : viewModel.waterDataWeekly;
+
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildChartCard(context, viewModel),
+                  _buildControlsCard(context, viewModel),
+                  const SizedBox(height: 16),
+
+                  _buildConsumptionCard(
+                    context: context,
+                    viewModel: viewModel,
+                    title: 'Consumo de Ração',
+                    icon: Icons.restaurant_menu_outlined,
+                    data: feedData,
+                    barColor: Colors.amber.shade800,
+                    isFeed: true,
+                  ),
+                  const SizedBox(height: 16),
+
+                  _buildConsumptionCard(
+                    context: context,
+                    viewModel: viewModel,
+                    title: 'Consumo de Água',
+                    icon: Icons.water_drop_outlined,
+                    data: waterData,
+                    barColor: Colors.blue.shade700,
+                    isFeed: false,
+                  ),
+
+                  // 2. CORREÇÃO DA LISTA CORTADA: Adicionado um espaço no final da tela
+                  const SizedBox(height: 16),
                 ],
               ),
             );
@@ -37,11 +66,62 @@ class TelaHistorico extends StatelessWidget {
     );
   }
 
-  Widget _buildChartCard(BuildContext context, HistoricoViewModel viewModel) {
+  Widget _buildControlsCard(BuildContext context, HistoricoViewModel viewModel) {
     final bool isDailyView = viewModel.currentView == ChartViewType.daily;
-    final String cardTitle = isDailyView ? 'Consumo Diário (7 dias)' : 'Consumo Semanal (4 Semanas)';
-    final List<Map<String, dynamic>> chartData = isDailyView ? viewModel.dailyConsumption : viewModel.weeklyConsumption;
-    final List<bool> isSelected = [isDailyView, !isDailyView];
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: corVerdeAgua.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return ToggleButtons(
+                  isSelected: [isDailyView, !isDailyView],
+                  onPressed: (index) => viewModel.changeView(index == 0 ? ChartViewType.daily : ChartViewType.weekly),
+                  borderRadius: BorderRadius.circular(8.0),
+                  selectedBorderColor: corPretoAzulado,
+                  selectedColor: Colors.white,
+                  fillColor: corPretoAzulado.withOpacity(0.8),
+                  color: corPretoAzulado,
+                  constraints: BoxConstraints.expand(
+                    width: (constraints.maxWidth / 2) - 2,
+                    height: 40,
+                  ),
+                  children: const [
+                    Text('Diário'),
+                    Text('Semanal'),
+                  ],
+                );
+              },
+            ),
+          ),
+          const SizedBox(width: 16),
+          IconButton(
+            icon: Icon(viewModel.isChartView ? Icons.list : Icons.bar_chart, color: corPretoAzulado),
+            onPressed: () => viewModel.toggleDisplayMode(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConsumptionCard({
+    required BuildContext context,
+    required HistoricoViewModel viewModel,
+    required String title,
+    required IconData icon,
+    required List<Map<String, dynamic>> data,
+    required Color barColor,
+    required bool isFeed,
+  }) {
+    final bool isDailyView = viewModel.currentView == ChartViewType.daily;
+    final String periodText = isDailyView ? "Últimos 7 dias" : "Últimas 4 semanas";
+    final String fullTitle = '$title - $periodText';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -53,61 +133,31 @@ class TelaHistorico extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(cardTitle,
-                  style: const TextStyle(
-                      color: corPretoAzulado,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold)),
-              IconButton(
-                icon: Icon(
-                  viewModel.isChartView ? Icons.list : Icons.bar_chart,
-                  color: corPretoAzulado,
-                ),
-                onPressed: () {
-                  viewModel.toggleDisplayMode();
-                },
+              Icon(icon, color: barColor, size: 24),
+              const SizedBox(width: 8),
+              // 1. CORREÇÃO DO TEXTO VAZANDO: Adicionado o widget Expanded
+              Expanded(
+                child: Text(fullTitle,
+                    style: TextStyle(
+                        color: corPretoAzulado,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold)),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              return ToggleButtons(
-                isSelected: isSelected,
-                onPressed: (int index) {
-                  final newView = index == 0 ? ChartViewType.daily : ChartViewType.weekly;
-                  viewModel.changeView(newView);
-                },
-                borderRadius: BorderRadius.circular(8.0),
-                selectedBorderColor: corPretoAzulado,
-                selectedColor: Colors.white,
-                fillColor: corPretoAzulado.withOpacity(0.8),
-                color: corPretoAzulado,
-                constraints: BoxConstraints.expand(
-                  width: (constraints.maxWidth / 2) - 2,
-                  height: 40,
-                ),
-                children: const [
-                  Text('Diário'),
-                  Text('Semanal'),
-                ],
-              );
-            },
           ),
           const SizedBox(height: 24),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             child: viewModel.isChartView
                 ? SizedBox(
-              key: const ValueKey('chart'),
+              key: ValueKey('$title-chart'),
               height: 200,
-              child: _buildBarChart(context, chartData, isDailyView),
+              child: _buildBarChart(data, isDailyView, isFeed, barColor),
             )
                 : Container(
-              key: const ValueKey('list'),
-              child: _buildConsumptionList(chartData, isDailyView),
+              key: ValueKey('$title-list'),
+              child: _buildConsumptionList(data, isDailyView, isFeed),
             ),
           ),
         ],
@@ -115,7 +165,7 @@ class TelaHistorico extends StatelessWidget {
     );
   }
 
-  Widget _buildConsumptionList(List<Map<String, dynamic>> data, bool isDailyView) {
+  Widget _buildConsumptionList(List<Map<String, dynamic>> data, bool isDailyView, bool isFeed) {
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -124,7 +174,7 @@ class TelaHistorico extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = data[index];
         final String title = isDailyView ? item['day'] : item['week'];
-        final String value = _formatValue((item['value'] as num).toDouble(), isDailyView);
+        final String value = _formatValue((item['value'] as num).toDouble(), isDailyView, isFeed);
         return ListTile(
           dense: true,
           title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: corPretoAzulado)),
@@ -134,14 +184,15 @@ class TelaHistorico extends StatelessWidget {
     );
   }
 
-  String _formatValue(double value, bool isDailyView) {
-    if (!isDailyView && value >= 1000) {
-      return '${(value / 1000).toStringAsFixed(1)}kg';
+  String _formatValue(double value, bool isDailyView, bool isFeed) {
+    if (isFeed) {
+      return isDailyView ? '${value.toInt()}g' : '${(value / 1000).toStringAsFixed(1)}kg';
+    } else {
+      return isDailyView ? '${value.toInt()}ml' : '${(value / 1000).toStringAsFixed(1)}L';
     }
-    return '${value.toInt()}g';
   }
 
-  Widget _buildBarChart(BuildContext context, List<Map<String, dynamic>> data, bool isDailyView) {
+  Widget _buildBarChart(List<Map<String, dynamic>> data, bool isDailyView, bool isFeed, Color barColor) {
     if (data.isEmpty) return const Center(child: Text("Sem dados."));
 
     final maxValue = data.map((e) => e['value'] as num).reduce((a, b) => a > b ? a : b).toDouble();
@@ -149,11 +200,7 @@ class TelaHistorico extends StatelessWidget {
     final chartMaxY = (maxValue / yInterval).ceil() * yInterval;
 
     String getBottomTitle(double value) {
-      if (isDailyView) {
-        return data[value.toInt()]['day'];
-      } else {
-        return data[value.toInt()]['week'];
-      }
+      return isDailyView ? data[value.toInt()]['day'] : data[value.toInt()]['week'];
     }
 
     return BarChart(
@@ -172,7 +219,7 @@ class TelaHistorico extends StatelessWidget {
               interval: yInterval,
               getTitlesWidget: (value, meta) {
                 if (value > meta.max) return const Text('');
-                return Text(_formatValue(value, isDailyView),
+                return Text(_formatValue(value, isDailyView, isFeed),
                     style: const TextStyle(color: corPretoAzulado, fontSize: 10));
               },
             ),
@@ -199,7 +246,7 @@ class TelaHistorico extends StatelessWidget {
             barRods: [
               BarChartRodData(
                 toY: (item['value'] as num).toDouble(),
-                color: corPretoAzulado,
+                color: barColor,
                 width: 22,
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -213,9 +260,9 @@ class TelaHistorico extends StatelessWidget {
   double _calculateYInterval(double max) {
     if (max <= 150) return 30;
     if (max <= 300) return 50;
-    if (max <= 800) return 200;
+    if (max <= 1000) return 200;
     if (max <= 2000) return 500;
-    if (max <= 4000) return 1000;
-    return 1000;
+    if (max <= 6000) return 1000;
+    return 2000;
   }
 }
