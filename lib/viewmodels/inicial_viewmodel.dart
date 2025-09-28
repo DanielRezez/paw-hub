@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:projeto_integrador2/views/tela_historico.dart';
 import 'package:projeto_integrador2/views/tela_configuracoes.dart';
 
 class inicialViewModel extends ChangeNotifier {
@@ -82,11 +83,11 @@ class inicialViewModel extends ChangeNotifier {
       // Navigator.push(context, MaterialPageRoute(builder: (_) => AgendaScreen()));
         print("Item 'Agenda' selecionado.");
         break;
-      case 2:
-      // Lógica para Histórico (índice 2)
-      // Exemplo: Navegar para uma tela de Histórico
-      // Navigator.push(context, MaterialPageRoute(builder: (_) => HistoricoScreen()));
-        print("Item 'Histórico' selecionado.");
+      case 2: // Lógica para Histórico
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const TelaHistorico()),
+        );
         break;
       case 3: // <<---- ESTE É O SEU ITEM DE CONFIGURAÇÕES
         print("Item 'Config' selecionado. Navegando para TelaConfiguracoes...");
