@@ -2,7 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-import '../viewmodels/auth_viewmodel.dart';
+import 'package:projeto_integrador2/viewmodels/auth_viewmodel.dart'; // Ainda necessário para o status
+import 'package:projeto_integrador2/viewmodels/login_viewmodel.dart'; // Importe o novo ViewModel
 import 'tela_cadastro.dart';
 
 class TelaLogin extends StatefulWidget {
@@ -13,14 +14,10 @@ class TelaLogin extends StatefulWidget {
 }
 
 class _TelaLoginState extends State<TelaLogin> {
-  // Chave para identificar e validar nosso formulário
   final _formKey = GlobalKey<FormState>();
-
-  // Controladores para pegar o texto dos campos de e-mail e senha
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // É importante limpar os controladores quando a tela não for mais usada
   @override
   void dispose() {
     _emailController.dispose();
@@ -28,38 +25,31 @@ class _TelaLoginState extends State<TelaLogin> {
     super.dispose();
   }
 
-  // Função chamada quando o botão de "Entrar" é pressionado
-  Future<void> _submitForm() async {
-    // Primeiro, verifica se o formulário é válido (campos preenchidos corretamente)
-    if (_formKey.currentState!.validate()) {
-      // Pega a instância do AuthViewModel (sem ouvir por atualizações aqui, só para chamar a função)
-      final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-
-      // Chama a função de signIn do ViewModel
-      bool success = await authViewModel.signIn(
-        _emailController.text,
-        _passwordController.text,
+  // Função para mostrar SnackBar de erro (passada como callback para o ViewModel)
+  void _showErrorSnackBar(String message) {
+    if (mounted) { // Garante que a tela ainda existe
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.redAccent,
+        ),
       );
-
-      // Se o login NÃO deu certo E há uma mensagem de erro E a tela ainda existe
-      if (!success && authViewModel.errorMessage != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authViewModel.errorMessage!),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-      // Se o login deu certo, o Wrapper cuidará de navegar para a TelaInicial.
     }
   }
 
+  // A função _submitForm foi movida para o LoginViewModel
+  // Future<void> _submitForm() async { ... }
+
   @override
   Widget build(BuildContext context) {
+    // Obtém o AuthViewModel para o status (para o CircularProgressIndicator)
     final authStatus = context.watch<AuthViewModel>().status;
+    // Obtém o LoginViewModel para as ações
+    final loginViewModel = Provider.of<LoginViewModel>(context, listen: false);
 
     return Scaffold(
       body: Container(
+        // ... (decoração do container permanece a mesma) ...
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFFA8E6CF), Colors.white],
@@ -78,12 +68,13 @@ class _TelaLoginState extends State<TelaLogin> {
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF388E3C), // Verde escuro para contraste
+                    color: Color(0xFF388E3C),
                   ),
                 ),
                 const SizedBox(height: 32),
                 Container(
                   padding: const EdgeInsets.all(24.0),
+                  // ... (decoração do container do formulário permanece a mesma) ...
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16.0),
@@ -100,9 +91,9 @@ class _TelaLoginState extends State<TelaLogin> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Campos de e-mail e senha
                         TextFormField(
                           controller: _emailController,
+                          // ... (validação e decoração permanecem as mesmas) ...
                           decoration: const InputDecoration(
                             labelText: 'E-mail',
                             hintText: 'seuemail@exemplo.com',
@@ -124,6 +115,7 @@ class _TelaLoginState extends State<TelaLogin> {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _passwordController,
+                          // ... (validação e decoração permanecem as mesmas) ...
                           decoration: const InputDecoration(
                             labelText: 'Senha',
                             prefixIcon: Icon(Icons.lock_outline),
@@ -140,7 +132,14 @@ class _TelaLoginState extends State<TelaLogin> {
                             }
                             return null;
                           },
-                          onFieldSubmitted: (_) => _submitForm(),
+                          onFieldSubmitted: (_) { // Chama o método do ViewModel
+                            loginViewModel.signInWithEmailAndPassword(
+                              formKey: _formKey,
+                              email: _emailController.text,
+                              password: _passwordController.text,
+                              showErrorSnackBar: _showErrorSnackBar,
+                            );
+                          },
                         ),
                         const SizedBox(height: 24),
                         if (authStatus == AuthStatus.authenticating)
@@ -151,7 +150,14 @@ class _TelaLoginState extends State<TelaLogin> {
                               padding: const EdgeInsets.symmetric(vertical: 16.0),
                               textStyle: const TextStyle(fontSize: 16),
                             ),
-                            onPressed: _submitForm,
+                            onPressed: () { // Chama o método do ViewModel
+                              loginViewModel.signInWithEmailAndPassword(
+                                formKey: _formKey,
+                                email: _emailController.text,
+                                password: _passwordController.text,
+                                showErrorSnackBar: _showErrorSnackBar,
+                              );
+                            },
                             child: const Text('Entrar'),
                           ),
                         const SizedBox(height: 16),
@@ -162,6 +168,7 @@ class _TelaLoginState extends State<TelaLogin> {
                             width: 30.0,
                           ),
                           label: const Text('Entrar com Google'),
+                          // ... (estilo permanece o mesmo) ...
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.black87,
                             backgroundColor: Colors.white,
@@ -173,23 +180,16 @@ class _TelaLoginState extends State<TelaLogin> {
                           ),
                           onPressed: authStatus == AuthStatus.authenticating
                               ? null
-                              : () async {
-                            final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-                            bool success = await authViewModel.signInWithGoogle();
-                            if (!success && authViewModel.errorMessage != null && mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(authViewModel.errorMessage!),
-                                  backgroundColor: Colors.redAccent,
-                                ),
-                              );
-                            }
+                              : () { // Chama o método do ViewModel
+                            loginViewModel.signInWithGoogle(
+                              showErrorSnackBar: _showErrorSnackBar,
+                            );
                           },
                         ),
                         const SizedBox(height: 16),
                         TextButton(
                           onPressed: () {
-                            Navigator.of(context).push(
+                            Navigator.of(context).pushReplacement(
                               MaterialPageRoute(builder: (context) => const TelaCadastro()),
                             );
                           },
@@ -207,3 +207,4 @@ class _TelaLoginState extends State<TelaLogin> {
     );
   }
 }
+

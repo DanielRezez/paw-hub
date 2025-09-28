@@ -64,7 +64,8 @@ class ConfiguracoesViewModel extends ChangeNotifier {
 
   Future<void> logout() async {
     print("ViewModel: Solicitando logout ao AuthViewModel...");
-    await _authViewModel.signOut();
+
+    await _authViewModel.signOutAll();
     // O Wrapper cuidará do redirecionamento
   }
 }

@@ -7,7 +7,10 @@ import 'package:provider/provider.dart';
 import 'auth_viewmodel.dart';
 import 'configuracoes_viewmodel.dart';
 
-class inicialViewModel extends ChangeNotifier {
+import 'auth_viewmodel.dart';
+import 'configuracoes_viewmodel.dart';
+
+class InicialViewModel extends ChangeNotifier {
   // ===================================================================
   // ESTADO E DADOS (A "fonte da verdade" da tela)
   // ===================================================================
@@ -63,28 +66,37 @@ class inicialViewModel extends ChangeNotifier {
   // ===================================================================
 
   // Chamado quando o usuário clica em um item da barra de navegação
-  void onItemTapped(int index, BuildContext context) { // <<< ADICIONE BuildContext context
-    if (_selectedIndex == index && index == 3) {
-      // Se o usuário já está na tela de configurações (ou a lógica que a representa)
-      // e clica nela de novo, não faz nada para evitar empilhar a mesma tela várias vezes.
-      // Você pode ajustar essa lógica se precisar de um comportamento diferente.
+  void onItemTapped(int index, BuildContext context) {
+    // Se for Configurações (índice 3), apenas navega para a tela, sem alterar _selectedIndex
+    if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChangeNotifierProvider<ConfiguracoesViewModel>(
+            create: (context) {
+              final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+              return ConfiguracoesViewModel(authViewModel);
+            },
+            child: TelaConfiguracoes(),
+          ),
+        ),
+      );
+      // Não chamamos notifyListeners, porque a barra principal não muda
       return;
     }
 
-    _selectedIndex = index;
+    // Para abas normais (0, 1, 2), atualiza o índice e notifica a UI
+    if (_selectedIndex != index) {
+      _selectedIndex = index;
+      notifyListeners();
+    }
 
+    // Debug opcional
     switch (index) {
       case 0:
-      // Lógica para Visão Geral (índice 0)
-      // Se a TelaInicial já mostra a "Visão Geral" por padrão,
-      // você pode não precisar fazer nada aqui, ou pode ter um widget específico
-      // para exibir no corpo da TelaInicial.
         print("Item 'Visão Geral' selecionado.");
         break;
       case 1:
-      // Lógica para Agenda (índice 1)
-      // Exemplo: Navegar para uma tela de Agenda
-      // Navigator.push(context, MaterialPageRoute(builder: (_) => AgendaScreen()));
         print("Item 'Agenda' selecionado.");
         break;
       case 2: // Lógica para Histórico
@@ -130,15 +142,9 @@ class inicialViewModel extends ChangeNotifier {
         // Se você quer que o item "Config" fique selecionado E navegue, o código atual
         // está bom. Apenas esteja ciente do comportamento do selectedIndex ao voltar.
         break;
+        
       default:
         print("Índice de item desconhecido: $index");
     }
-
-    // Você só precisa chamar notifyListeners se a própria TelaInicial
-    // muda sua UI com base no _selectedIndex (além do destaque do BottomNav).
-    // Se você está navegando para telas completamente diferentes,
-    // o notifyListeners aqui pode não ser estritamente necessário para a navegação em si,
-    // mas ainda é útil para atualizar o item destacado no BottomNav.
-    notifyListeners();
   }
 }
