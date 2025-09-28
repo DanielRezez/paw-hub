@@ -1,8 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:projeto_integrador2/viewmodels/historico_viewmodel.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:projeto_integrador2/utils/cores.dart';
+import 'package:projeto_integrador2/utils/app_exports.dart'; // Import centralizado
 
 class TelaHistorico extends StatelessWidget {
   const TelaHistorico({super.key});
@@ -55,7 +52,6 @@ class TelaHistorico extends StatelessWidget {
                     isFeed: false,
                   ),
 
-                  // 2. CORREÇÃO DA LISTA CORTADA: Adicionado um espaço no final da tela
                   const SizedBox(height: 16),
                 ],
               ),
@@ -136,7 +132,6 @@ class TelaHistorico extends StatelessWidget {
             children: [
               Icon(icon, color: barColor, size: 24),
               const SizedBox(width: 8),
-              // 1. CORREÇÃO DO TEXTO VAZANDO: Adicionado o widget Expanded
               Expanded(
                 child: Text(fullTitle,
                     style: TextStyle(
@@ -200,6 +195,7 @@ class TelaHistorico extends StatelessWidget {
     final chartMaxY = (maxValue / yInterval).ceil() * yInterval;
 
     String getBottomTitle(double value) {
+      if (value.toInt() < 0 || value.toInt() >= data.length) return ''; // Proteção
       return isDailyView ? data[value.toInt()]['day'] : data[value.toInt()]['week'];
     }
 
@@ -218,7 +214,7 @@ class TelaHistorico extends StatelessWidget {
               reservedSize: 40,
               interval: yInterval,
               getTitlesWidget: (value, meta) {
-                if (value > meta.max) return const Text('');
+                if (value > meta.max || value < meta.min) return const Text(''); // Proteção
                 return Text(_formatValue(value, isDailyView, isFeed),
                     style: const TextStyle(color: corPretoAzulado, fontSize: 10));
               },
@@ -229,6 +225,7 @@ class TelaHistorico extends StatelessWidget {
               showTitles: true,
               reservedSize: 30,
               getTitlesWidget: (double value, TitleMeta meta) {
+                 if (value.toInt() < 0 || value.toInt() >= data.length) return const Text(''); // Proteção
                 return Text(getBottomTitle(value),
                     style: const TextStyle(
                         color: corPretoAzulado,
@@ -258,6 +255,7 @@ class TelaHistorico extends StatelessWidget {
   }
 
   double _calculateYInterval(double max) {
+    if (max <= 0) return 10; // Evita divisão por zero ou intervalo zero se max for 0 ou negativo
     if (max <= 150) return 30;
     if (max <= 300) return 50;
     if (max <= 1000) return 200;

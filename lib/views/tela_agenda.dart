@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:projeto_integrador2/viewmodels/agenda_viewmodel.dart';
+import 'package:projeto_integrador2/utils/app_exports.dart'; // Import centralizado
 
 class TelaAgenda extends StatelessWidget {
   const TelaAgenda({super.key});
@@ -11,7 +9,7 @@ class TelaAgenda extends StatelessWidget {
       builder: (context, viewModel, child) {
         return Scaffold(
           appBar: AppBar(
-            title: Text('Agenda'),
+            title: Text('Agenda'), // Título original restaurado
             actions: [
               IconButton(
                 icon: Icon(Icons.save),
@@ -50,13 +48,11 @@ class TelaAgenda extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              // Usando o ID da refeição ou o índice para o título,
-                              // já que a ordem e o número podem mudar.
-                              'Refeição ${index + 1}', // Ou você pode querer usar um ID/nome da refeição se tiver
+                              'Refeição ${index + 1}',
                               style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete_forever_outlined, color: Colors.redAccent), // Ícone alterado para indicar deleção permanente
+                              icon: Icon(Icons.delete_forever_outlined, color: Colors.redAccent),
                               tooltip: 'Remover esta refeição',
                               onPressed: () {
                                 showDialog(
@@ -75,7 +71,6 @@ class TelaAgenda extends StatelessWidget {
                                         TextButton(
                                           child: Text('Remover', style: TextStyle(color: Colors.redAccent)),
                                           onPressed: () {
-                                            // CHAMANDO O MÉTODO CORRETO AQUI
                                             viewModel.removerRefeicaoDefinitivamente(index);
                                             Navigator.of(dialogContext).pop();
                                           },
@@ -112,9 +107,6 @@ class TelaAgenda extends StatelessWidget {
                         ),
                         SizedBox(height: 8),
                         TextFormField(
-                          // Usar um Key aqui pode ser útil se os itens mudam de ordem frequentemente,
-                          // mas para simples adição/remoção, o Flutter geralmente lida bem.
-                          // key: ValueKey(refeicao.id), // Exemplo se você usar IDs como keys
                           initialValue: refeicao.quantidade,
                           decoration: InputDecoration(
                             labelText: 'Quantidade',
@@ -162,4 +154,3 @@ class TelaAgenda extends StatelessWidget {
     );
   }
 }
-

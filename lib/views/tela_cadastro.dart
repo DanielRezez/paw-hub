@@ -1,7 +1,5 @@
 // lib/views/tela_cadastro.dart
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../viewmodels/auth_viewmodel.dart';
+import 'package:projeto_integrador2/utils/app_exports.dart'; // Import centralizado
 
 class TelaCadastro extends StatefulWidget {
   const TelaCadastro({super.key});
@@ -60,7 +58,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cadastro - PawHub'),
+        title: const Text('Cadastro - PetHub'), // Alterado para PetHub
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -159,5 +157,4 @@ class _TelaCadastroState extends State<TelaCadastro> {
     );
   }
 }
-
 

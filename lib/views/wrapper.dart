@@ -1,9 +1,5 @@
 // lib/views/wrapper.dart
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:projeto_integrador2/viewmodels/auth_viewmodel.dart';
-import 'package:projeto_integrador2/viewmodels/inicial_viewmodel.dart'; // Importado
-import 'package:projeto_integrador2/viewmodels/login_viewmodel.dart';   // <<< ADICIONE ESTE IMPORT
+import 'package:projeto_integrador2/utils/app_exports.dart'; // Import centralizado
 import 'package:projeto_integrador2/views/tela_inicial.dart';
 import 'package:projeto_integrador2/views/tela_login.dart';
 
