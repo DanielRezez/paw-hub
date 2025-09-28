@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:projeto_integrador2/views/tela_historico.dart';
 import 'package:projeto_integrador2/views/tela_configuracoes.dart';
 import 'package:provider/provider.dart';
+
+import 'auth_viewmodel.dart';
+import 'configuracoes_viewmodel.dart';
 
 import 'auth_viewmodel.dart';
 import 'configuracoes_viewmodel.dart';
@@ -95,9 +99,50 @@ class InicialViewModel extends ChangeNotifier {
       case 1:
         print("Item 'Agenda' selecionado.");
         break;
-      case 2:
-        print("Item 'Histórico' selecionado.");
+      case 2: // Lógica para Histórico
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const TelaHistorico()),
+        );
         break;
+      case 3: // Config
+        print("Item 'Config' selecionado. Navegando para TelaConfiguracoes...");
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider<ConfiguracoesViewModel>(
+              create: (context) {
+                // Obtém o AuthViewModel já fornecido para passá-lo ao ConfiguracoesViewModel
+                final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+                return ConfiguracoesViewModel(authViewModel);
+              },
+              child: TelaConfiguracoes(), // Remova o const se não for mais necessário
+            ),
+          ),
+        );
+        // IMPORTANTE: Se você navega para uma nova tela CHEIA (como TelaConfiguracoes),
+        // você geralmente NÃO quer que o _selectedIndex permaneça 3 quando voltar,
+        // pois a TelaInicial será a tela "por baixo".
+        // Considere resetar o _selectedIndex para o índice da tela principal (ex: 0)
+        // APÓS o Navigator.push, ou não atualizar o _selectedIndex aqui se a navegação
+        // for para uma tela completamente diferente que cobre a TelaInicial.
+        // Se a TelaConfiguracoes for uma sub-view DENTRO da TelaInicial, então manter
+        // _selectedIndex = 3 faz sentido.
+        //
+        // Para o seu caso, como TelaConfiguracoes é uma nova tela via MaterialPageRoute,
+        // o BottomNavigationBar da TelaInicial não será visível na TelaConfiguracoes.
+        // Quando você voltar da TelaConfiguracoes, o _selectedIndex ainda será 3,
+        // o que pode ou não ser o desejado.
+        //
+        // Uma abordagem comum é que o BottomNavigationBar controle apenas as seções
+        // PRINCIPAIS da tela atual. Se "Configurações" é uma tela totalmente separada,
+        // talvez não devesse mudar o selectedIndex da TelaInicial, ou deveria
+        // ser acessada por um botão diferente (ex: no AppBar).
+        //
+        // Se você quer que o item "Config" fique selecionado E navegue, o código atual
+        // está bom. Apenas esteja ciente do comportamento do selectedIndex ao voltar.
+        break;
+        
       default:
         print("Índice de item desconhecido: $index");
     }
