@@ -9,9 +9,6 @@ import 'auth_viewmodel.dart';
 import 'configuracoes_viewmodel.dart';
 import 'agenda_viewmodel.dart';
 
-import 'auth_viewmodel.dart';
-import 'configuracoes_viewmodel.dart';
-
 class InicialViewModel extends ChangeNotifier {
   // ===================================================================
   // ESTADO E DADOS (A "fonte da verdade" da tela)
