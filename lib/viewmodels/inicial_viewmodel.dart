@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:projeto_integrador2/views/tela_agenda.dart';
 import 'package:projeto_integrador2/views/tela_configuracoes.dart';
 import 'package:provider/provider.dart';
 
 import 'auth_viewmodel.dart';
 import 'configuracoes_viewmodel.dart';
+import 'agenda_viewmodel.dart';
 
 class InicialViewModel extends ChangeNotifier {
   // ===================================================================
@@ -87,15 +89,31 @@ class InicialViewModel extends ChangeNotifier {
       notifyListeners();
     }
 
-    // Debug opcional
     switch (index) {
       case 0:
+      // Lógica para Visão Geral (índice 0)
+      // A TelaInicial já mostra a "Visão Geral" por padrão
         print("Item 'Visão Geral' selecionado.");
         break;
       case 1:
+      // Lógica para Agenda (índice 1)
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider<TelaAgendaViewModel>(
+              create: (context) {
+                // Obtém o AuthViewModel já fornecido para passá-lo ao ConfiguracoesViewModel
+                final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+                return TelaAgendaViewModel();
+              },
+              child: TelaAgenda(), // Remova o const se não for mais necessário
+            ),
+          ),
+        );
         print("Item 'Agenda' selecionado.");
         break;
       case 2:
+      // Lógica para Histórico (índice 2)
         print("Item 'Histórico' selecionado.");
         break;
       default:
