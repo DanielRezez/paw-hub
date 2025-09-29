@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:projeto_integrador2/viewmodels/inicial_viewmodel.dart'; // IMPORTA O VIEWMODEL
 import 'package:projeto_integrador2/utils/cores.dart';
 // lib/views/tela_inicial.dart
-import '../viewmodels/auth_viewmodel.dart';
 
 class TelaInicial extends StatelessWidget {
   const TelaInicial({super.key});
@@ -16,16 +15,16 @@ class TelaInicial extends StatelessWidget {
     return Scaffold(
       backgroundColor: corOffWhite,
       appBar: AppBar(
-        backgroundColor: corVerdeAgua.withOpacity(0.5),
-        foregroundColor: corPretoAzulado,
+        backgroundColor: corBeringela,
+        foregroundColor: corBrancoPuro,
         elevation: 0,
         title: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'PetCare Monitor',
+              'PetHub Monitor',
               style: TextStyle(
-                color: corPretoAzulado,
+                color: corBrancoPuro,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
@@ -33,7 +32,7 @@ class TelaInicial extends StatelessWidget {
             Text(
               'Cuidando do seu melhor amigo',
               style: TextStyle(
-                color: corPretoAzulado.withOpacity(0.7),
+                color: corBrancoPuro.withOpacity(0.7),
                 fontSize: 14,
               ),
             ),
@@ -139,7 +138,7 @@ class TelaInicial extends StatelessWidget {
       height: 250,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: corVerdeAgua.withOpacity(0.3),
+        color: corVerdeAgua,
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
@@ -251,7 +250,7 @@ class TelaInicial extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: corVerdeAgua.withOpacity(0.3),
+        color: corVerdeAgua,
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
@@ -303,7 +302,7 @@ class TelaInicial extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 26.5),
       decoration: BoxDecoration(
-        color: corVerdeAgua.withOpacity(0.3),
+        color: corVerdeAgua,
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
@@ -347,7 +346,7 @@ class TelaInicial extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: corVerdeAgua.withOpacity(0.3),
+        color: corVerdeAgua,
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(

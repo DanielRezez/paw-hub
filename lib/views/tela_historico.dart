@@ -15,8 +15,8 @@ class TelaHistorico extends StatelessWidget {
         backgroundColor: corOffWhite,
         appBar: AppBar(
           title: const Text('Histórico de Consumo'),
-          backgroundColor: corVerdeAgua.withOpacity(0.5),
-          foregroundColor: corPretoAzulado,
+          backgroundColor: corBeringela,
+          foregroundColor: corBrancoPuro,
           elevation: 0,
           centerTitle: true,
         ),
@@ -71,7 +71,7 @@ class TelaHistorico extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: corVerdeAgua.withOpacity(0.3),
+        color: corVerdeAgua,
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
@@ -126,7 +126,7 @@ class TelaHistorico extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
-        color: corVerdeAgua.withOpacity(0.3),
+        color: corVerdeAgua,
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(

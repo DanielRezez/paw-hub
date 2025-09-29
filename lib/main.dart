@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:projeto_integrador2/views/wrapper.dart';
-import 'package:projeto_integrador2/viewmodels/carregamento_viewmodel.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:projeto_integrador2/viewmodels/auth_viewmodel.dart';
 import 'package:projeto_integrador2/viewmodels/sensor_viewmodel.dart'; // Adicionado
-import 'package:projeto_integrador2/views/wrapper.dart';
-import 'views/tela_login.dart';
-import 'viewmodels/inicial_viewmodel.dart'; // Corrigido para seu ViewModel
-import 'views/tela_inicial.dart';
+// Corrigido para seu ViewModel
 
 // --- ATENÇÃO ---
 // Garanta que você tem esses arquivos com suas definições de cores e fontes
@@ -52,7 +47,7 @@ class MyApp extends StatelessWidget {
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: corBeringela,
-          foregroundColor: corOffWhite,
+          foregroundColor: corBrancoPuro,
         ),
       ),
       home: Wrapper(),

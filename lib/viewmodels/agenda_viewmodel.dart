@@ -19,7 +19,7 @@ class RefeicaoProgramada {
 
 class TelaAgendaViewModel extends ChangeNotifier {
   // Agora uma lista dinâmica, não mais com 3 slots fixos.
-  List<RefeicaoProgramada> _perfilHorarios = [];
+  final List<RefeicaoProgramada> _perfilHorarios = [];
 
   List<RefeicaoProgramada> get perfilHorarios => _perfilHorarios;
 

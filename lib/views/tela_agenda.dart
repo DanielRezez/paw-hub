@@ -112,9 +112,6 @@ class TelaAgenda extends StatelessWidget {
                         ),
                         SizedBox(height: 8),
                         TextFormField(
-                          // Usar um Key aqui pode ser útil se os itens mudam de ordem frequentemente,
-                          // mas para simples adição/remoção, o Flutter geralmente lida bem.
-                          // key: ValueKey(refeicao.id), // Exemplo se você usar IDs como keys
                           initialValue: refeicao.quantidade,
                           decoration: InputDecoration(
                             labelText: 'Quantidade',
@@ -135,7 +132,7 @@ class TelaAgenda extends StatelessWidget {
                             Text('Ativar Refeição:', style: Theme.of(context).textTheme.titleMedium),
                             Switch(
                               value: refeicao.ativa,
-                              activeColor: Colors.teal,
+                              activeThumbColor: Colors.teal,
                               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               onChanged: (ativada) {
                                 viewModel.toggleAtivacaoRefeicao(index);
