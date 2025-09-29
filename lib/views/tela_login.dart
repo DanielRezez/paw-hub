@@ -1,9 +1,6 @@
 // lib/views/tela_login.dart
-import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:provider/provider.dart';
-import 'package:projeto_integrador2/viewmodels/auth_viewmodel.dart'; // Ainda necessário para o status
-import 'package:projeto_integrador2/viewmodels/login_viewmodel.dart'; // Importe o novo ViewModel
+import 'package:projeto_integrador2/utils/app_exports.dart'; // Import centralizado
 import 'tela_cadastro.dart';
 
 class TelaLogin extends StatefulWidget {
@@ -163,9 +160,9 @@ class _TelaLoginState extends State<TelaLogin> {
                         const SizedBox(height: 16),
                         ElevatedButton.icon(
                           icon: SvgPicture.asset(
-                            'assets/images/google_logo.svg',
-                            height: 30.0,
-                            width: 30.0,
+                            'assets/images/google_logo.svg', // Certifique-se que este asset existe
+                            height: 24.0, // Ajustado para melhor proporção no botão
+                            width: 24.0,
                           ),
                           label: const Text('Entrar com Google'),
                           // ... (estilo permanece o mesmo) ...
