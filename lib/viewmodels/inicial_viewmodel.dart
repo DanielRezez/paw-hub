@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projeto_integrador2/views/tela_agenda.dart';
 import 'package:projeto_integrador2/views/tela_historico.dart';
 import 'package:projeto_integrador2/views/tela_configuracoes.dart';
@@ -13,6 +14,13 @@ import 'configuracoes_viewmodel.dart';
 
 class InicialViewModel extends ChangeNotifier {
   // ===================================================================
+  // CONSTANTES
+  // ===================================================================
+
+  // chave pro SharedPreferences (ração consumida hoje)
+  static const String _keyRacaoConsumidaHoje = 'racao_consumida_hoje';
+
+  // ===================================================================
   // DEPENDÊNCIAS
   // ===================================================================
 
@@ -23,13 +31,22 @@ class InicialViewModel extends ChangeNotifier {
     _atualizarProximaRefeicao();
 
     // Atualiza sempre que a agenda mudar (ex.: usuário salvar a agenda)
-    agendaViewModel.addListener(_atualizarProximaRefeicao);
+    agendaViewModel.addListener(_onAgendaChanged);
 
     // Timer para contagem regressiva ficar em tempo quase real
     _timer = Timer.periodic(
       const Duration(seconds: 1),
           (_) => _atualizarProximaRefeicao(),
     );
+
+    // Carrega o valor de ração consumida salvo anteriormente
+    _carregarRacaoConsumida();
+  }
+
+  void _onAgendaChanged() {
+    // Quando a agenda muda, atualiza próxima refeição e meta de ração
+    _atualizarProximaRefeicao();
+    notifyListeners();
   }
 
   Timer? _timer;
@@ -41,11 +58,12 @@ class InicialViewModel extends ChangeNotifier {
   // Estado da navegação
   int _selectedIndex = 0;
 
-  // Dados mockados do pet (por enquanto continuam assim)
-  final double _aguaConsumidaHoje = 290.0;
-  final double _metaAgua = 200.0;
-  final double _racaoConsumidaHoje = 135.0;
-  final double _metaRacao = 120.0;
+  // Água (por enquanto mantém mockado)
+  double _aguaConsumidaHoje = 290.0;
+  double _metaAgua = 200.0;
+
+  // Ração – consumo do dia (meta vem da Agenda)
+  double _racaoConsumidaHoje = 0.0;
 
   // Próxima refeição (vindos da agenda)
   RefeicaoProgramada? _proximaRefeicao;
@@ -68,15 +86,41 @@ class InicialViewModel extends ChangeNotifier {
 
   int get selectedIndex => _selectedIndex;
 
-  // Card de Água
+  // Água
   String get aguaConsumidaFormatada => '${_aguaConsumidaHoje.toInt()}ml';
   String get metaAguaFormatada => 'Meta: ${_metaAgua.toInt()}ml';
-  double get progressoAgua => _metaAgua == 0 ? 0 : _aguaConsumidaHoje / _metaAgua;
+  double get progressoAgua =>
+      _metaAgua == 0 ? 0 : _aguaConsumidaHoje / _metaAgua;
 
-  // Card de Ração
-  String get racaoConsumidaFormatada => '${_racaoConsumidaHoje.toInt()}g';
-  String get metaRacaoFormatada => 'Meta: ${_metaRacao.toInt()}g';
-  double get progressoRacao => _metaRacao == 0 ? 0 : _racaoConsumidaHoje / _metaRacao;
+  // ====== Ração (meta vinda da Agenda) ======
+
+  /// Meta diária de ração (soma das quantidades das refeições ATIVAS)
+  double get metaRacaoDiaria {
+    double total = 0;
+
+    for (final refeicao
+    in agendaViewModel.perfilHorarios.where((r) => r.ativa)) {
+      final q = _parseQuantidadeEmGramas(refeicao.quantidade);
+      total += q;
+    }
+
+    return total;
+  }
+
+  /// Texto "25g"
+  String get racaoConsumidaFormatada =>
+      '${_racaoConsumidaHoje.toStringAsFixed(0)}g';
+
+  /// Texto "Meta: 50g"
+  String get metaRacaoFormatada =>
+      'Meta: ${metaRacaoDiaria.toStringAsFixed(0)}g';
+
+  /// Progresso (0.0 a 1.0)
+  double get progressoRacao =>
+      metaRacaoDiaria <= 0 ? 0 : _racaoConsumidaHoje / metaRacaoDiaria;
+
+  /// Valor cru, pra usar no diálogo
+  double get racaoConsumidaHoje => _racaoConsumidaHoje;
 
   // Próxima refeição (AGORA REAL, via agenda)
   String get proximaRefeicao {
@@ -126,7 +170,28 @@ class InicialViewModel extends ChangeNotifier {
   }
 
   // ===================================================================
-  // MÉTODOS (Ações que a View pode chamar)
+  // PERSISTÊNCIA – Ração consumida
+  // ===================================================================
+
+  Future<void> _carregarRacaoConsumida() async {
+    final prefs = await SharedPreferences.getInstance();
+    _racaoConsumidaHoje =
+        prefs.getDouble(_keyRacaoConsumidaHoje) ?? 0.0;
+    notifyListeners();
+  }
+
+  /// Atualiza o valor consumido de ração (em gramas) e salva no SharedPreferences
+  Future<void> atualizarRacaoConsumida(double novoValor) async {
+    if (novoValor < 0) novoValor = 0;
+    _racaoConsumidaHoje = novoValor;
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_keyRacaoConsumidaHoje, _racaoConsumidaHoje);
+  }
+
+  // ===================================================================
+  // AÇÕES DA VIEW
   // ===================================================================
 
   // Chamado quando o usuário clica em um item da barra de navegação
@@ -143,11 +208,10 @@ class InicialViewModel extends ChangeNotifier {
                   Provider.of<AuthViewModel>(context, listen: false);
                   return ConfiguracoesViewModel(authViewModel);
                 },
-                child: TelaConfiguracoes(),
+                child: const TelaConfiguracoes(),
               ),
         ),
       );
-      // Não chamamos notifyListeners, porque a barra principal não muda
       return;
     }
 
@@ -159,25 +223,20 @@ class InicialViewModel extends ChangeNotifier {
 
     switch (index) {
       case 0:
-      // Visão Geral
         print("Item 'Visão Geral' selecionado.");
         break;
 
       case 1:
-      // AGENDA
-      // IMPORTANTE: usa o MESMO TelaAgendaViewModel global,
-      // não cria outro ChangeNotifierProvider aqui.
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => TelaAgenda(),
+            builder: (context) => const TelaAgenda(),
           ),
         );
         print("Item 'Agenda' selecionado.");
         break;
 
       case 2:
-      // Histórico
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -187,23 +246,7 @@ class InicialViewModel extends ChangeNotifier {
         break;
 
       case 3:
-      // (já tratado acima, mas mantive por segurança)
-        print(
-            "Item 'Config' selecionado. Navegando para TelaConfiguracoes...");
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                ChangeNotifierProvider<ConfiguracoesViewModel>(
-                  create: (context) {
-                    final authViewModel =
-                    Provider.of<AuthViewModel>(context, listen: false);
-                    return ConfiguracoesViewModel(authViewModel);
-                  },
-                  child: TelaConfiguracoes(),
-                ),
-          ),
-        );
+      // já tratado lá em cima
         break;
 
       default:
@@ -211,10 +254,30 @@ class InicialViewModel extends ChangeNotifier {
     }
   }
 
+  // ===================================================================
+  // HELPERS
+  // ===================================================================
+
+  /// Tenta extrair um número da string de quantidade, em gramas.
+  /// Exemplos:
+  /// "200g" -> 200
+  /// "50 g, 1 porção" -> 50
+  /// "abc" -> 0
+  double _parseQuantidadeEmGramas(String quantidade) {
+    final regex = RegExp(r'(\d+(\,\d+)?(\.\d+)?)');
+    final match = regex.firstMatch(quantidade);
+    if (match == null) return 0;
+
+    final raw = match.group(0) ?? '';
+    final normalized = raw.replaceAll(',', '.');
+
+    return double.tryParse(normalized) ?? 0;
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
-    agendaViewModel.removeListener(_atualizarProximaRefeicao);
+    agendaViewModel.removeListener(_onAgendaChanged);
     super.dispose();
   }
 }

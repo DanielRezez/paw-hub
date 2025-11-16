@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
-import 'package:projeto_integrador2/viewmodels/inicial_viewmodel.dart'; // IMPORTA O VIEWMODEL
+import 'package:projeto_integrador2/viewmodels/inicial_viewmodel.dart';
 import 'package:projeto_integrador2/utils/cores.dart';
-// lib/views/tela_inicial.dart
 
 class TelaInicial extends StatelessWidget {
   const TelaInicial({super.key});
@@ -65,6 +64,15 @@ class TelaInicial extends StatelessWidget {
                     meta: viewModel.metaRacaoFormatada,
                     progress: viewModel.progressoRacao,
                     progressColor: Colors.orange.shade300,
+                    onTap: () async {
+                      final novoValor = await _mostrarDialogoRacao(
+                        context,
+                        viewModel.racaoConsumidaHoje,
+                      );
+                      if (novoValor != null) {
+                        viewModel.atualizarRacaoConsumida(novoValor);
+                      }
+                    },
                   ),
                 ),
               ],
@@ -128,10 +136,48 @@ class TelaInicial extends StatelessWidget {
     );
   }
 
-  // ... Os outros métodos de build (_buildInfoCard, etc) continuam aqui ...
-  // ... _buildInfoCard, _buildSimpleInfoCard, _buildAlertCard ...
-  // A única mudança é no _buildWeeklyChartCard abaixo
-  // A função bottomTitleWidgets foi REMOVIDA
+  // ============== Diálogo pra editar ração consumida ==============
+
+  Future<double?> _mostrarDialogoRacao(
+      BuildContext context, double valorAtual) async {
+    final controller = TextEditingController(
+      text: valorAtual.toStringAsFixed(0),
+    );
+
+    return showDialog<double>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Atualizar ração consumida'),
+          content: TextField(
+            controller: controller,
+            keyboardType:
+            const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: 'Quantidade (g)',
+              hintText: 'Ex: 100',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                final raw = controller.text.trim().replaceAll(',', '.');
+                final valor = double.tryParse(raw);
+                Navigator.of(ctx).pop(valor);
+              },
+              child: const Text('Salvar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // =================== UI Helpers ===================
 
   Widget _buildWeeklyChartCard(List<FlSpot> spots) {
     return Container(
@@ -164,53 +210,41 @@ class TelaInicial extends StatelessWidget {
                       interval: 80,
                     ),
                   ),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  // ======================= MUDANÇA AQUI =======================
+                  rightTitles:
+                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles:
+                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 30,
                       interval: 1,
-                      // A lógica da função foi movida para cá
                       getTitlesWidget: (double value, TitleMeta meta) {
                         const style = TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         );
-                        Widget text;
                         switch (value.toInt()) {
                           case 0:
-                            text = const Text('Seg', style: style);
-                            break;
+                            return const Text('Seg', style: style);
                           case 1:
-                            text = const Text('Ter', style: style);
-                            break;
+                            return const Text('Ter', style: style);
                           case 2:
-                            text = const Text('Qua', style: style);
-                            break;
+                            return const Text('Qua', style: style);
                           case 3:
-                            text = const Text('Qui', style: style);
-                            break;
+                            return const Text('Qui', style: style);
                           case 4:
-                            text = const Text('Sex', style: style);
-                            break;
+                            return const Text('Sex', style: style);
                           case 5:
-                            text = const Text('Sáb', style: style);
-                            break;
+                            return const Text('Sáb', style: style);
                           case 6:
-                            text = const Text('Dom', style: style);
-                            break;
+                            return const Text('Dom', style: style);
                           default:
-                            text = const Text('', style: style);
-                            break;
+                            return const Text('', style: style);
                         }
-                        // Agora a gente retorna SÓ O TEXTO, sem o SideTitleWidget
-                        return text;
                       },
                     ),
                   ),
-                  // ==================== FIM DA MUDANÇA ====================
                 ),
                 borderData: FlBorderData(show: false),
                 minX: 0,
@@ -236,9 +270,6 @@ class TelaInicial extends StatelessWidget {
     );
   }
 
-  // Cole os outros métodos de build aqui se precisar
-  // _buildInfoCard, _buildSimpleInfoCard, _buildAlertCard
-  // Só não precisa mais do bottomTitleWidgets
   Widget _buildInfoCard({
     required IconData icon,
     required String title,
@@ -246,49 +277,58 @@ class TelaInicial extends StatelessWidget {
     required String meta,
     required double progress,
     required Color progressColor,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: corVerdeAgua,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: corPretoAzulado, size: 24),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(color: corPretoAzulado, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            value,
-            style: const TextStyle(
-              color: corPretoAzulado,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
+    return InkWell(
+      borderRadius: BorderRadius.circular(15),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: corVerdeAgua,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: corPretoAzulado, size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: const TextStyle(
+                      color: corPretoAzulado, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            meta,
-            style: TextStyle(color: corPretoAzulado.withOpacity(0.7), fontSize: 12),
-          ),
-          const SizedBox(height: 10),
-          LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Colors.grey.withOpacity(0.3),
-            valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-            minHeight: 6,
-            borderRadius: BorderRadius.circular(5),
-          ),
-        ],
+            const SizedBox(height: 10),
+            Text(
+              value,
+              style: const TextStyle(
+                color: corPretoAzulado,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              meta,
+              style: TextStyle(
+                color: corPretoAzulado.withOpacity(0.7),
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 10),
+            LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              backgroundColor: Colors.grey.withOpacity(0.3),
+              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+              minHeight: 6,
+              borderRadius: BorderRadius.circular(5),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -314,7 +354,8 @@ class TelaInicial extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(color: corPretoAzulado, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: corPretoAzulado, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -330,7 +371,10 @@ class TelaInicial extends StatelessWidget {
           const SizedBox(height: 5),
           Text(
             subtitle,
-            style: TextStyle(color: corPretoAzulado.withOpacity(0.7), fontSize: 12),
+            style: TextStyle(
+              color: corPretoAzulado.withOpacity(0.7),
+              fontSize: 12,
+            ),
           ),
         ],
       ),
@@ -358,7 +402,8 @@ class TelaInicial extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(color: corPretoAzulado, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: corPretoAzulado, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -369,15 +414,19 @@ class TelaInicial extends StatelessWidget {
               color: corBeringela,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Text(
-              alertText,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            child: const Text(
+              'Água baixa',
+              style: TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             actionText,
-            style: TextStyle(color: corPretoAzulado.withOpacity(0.9), fontSize: 13),
+            style: TextStyle(
+              color: corPretoAzulado.withOpacity(0.9),
+              fontSize: 13,
+            ),
           ),
           const SizedBox(height: 10.5),
         ],
