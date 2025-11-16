@@ -23,8 +23,12 @@ class TelaAgendaViewModel extends ChangeNotifier {
 
   List<RefeicaoProgramada> get perfilHorarios => _perfilHorarios;
 
+  // --- ESTA É A CORREÇÃO ---
+  // O construtor agora é "limpo" e não chama mais código async
   TelaAgendaViewModel() {
-    carregarPerfil();
+    // carregarPerfil(); <-- LINHA REMOVIDA
+    // O carregamento agora é feito pelo "dono" do ViewModel
+    // (neste caso, os nossos testes ou a sua Tela).
   }
 
   // Chaves base para SharedPreferences
@@ -150,18 +154,4 @@ class TelaAgendaViewModel extends ChangeNotifier {
     _perfilHorarios[index].ativa = !_perfilHorarios[index].ativa;
     notifyListeners();
   }
-
-// O método limparRefeicao não faz mais sentido no contexto de deletar definitivamente.
-// Se o usuário quiser "limpar" um item, ele pode editar seus campos para vazios/padrão.
-// Ou podemos mantê-lo se você ainda quiser um "reset" rápido para um item existente.
-// Por enquanto, vou comentá-lo para evitar confusão com o "removerDefinitivamente".
-/*
-  void limparRefeicao(int index) {
-    if (index < 0 || index >= _perfilHorarios.length) return;
-    _perfilHorarios[index].horario = TimeOfDay(hour: 8 + index * 4, minute: 0);
-    _perfilHorarios[index].quantidade = "";
-    _perfilHorarios[index].ativa = false;
-    notifyListeners();
-  }
-  */
 }
