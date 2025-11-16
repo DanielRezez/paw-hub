@@ -1,29 +1,55 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:projeto_integrador2/views/tela_agenda.dart';
 import 'package:projeto_integrador2/views/tela_historico.dart';
 import 'package:projeto_integrador2/views/tela_configuracoes.dart';
+import 'package:projeto_integrador2/viewmodels/agenda_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 import 'auth_viewmodel.dart';
 import 'configuracoes_viewmodel.dart';
-import 'agenda_viewmodel.dart';
 
 class InicialViewModel extends ChangeNotifier {
   // ===================================================================
-  // ESTADO E DADOS (A "fonte da verdade" da tela)
+  // DEPENDÊNCIAS
+  // ===================================================================
+
+  final TelaAgendaViewModel agendaViewModel;
+
+  InicialViewModel(this.agendaViewModel) {
+    // Atualiza assim que criar
+    _atualizarProximaRefeicao();
+
+    // Atualiza sempre que a agenda mudar (ex.: usuário salvar a agenda)
+    agendaViewModel.addListener(_atualizarProximaRefeicao);
+
+    // Timer para contagem regressiva ficar em tempo quase real
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+          (_) => _atualizarProximaRefeicao(),
+    );
+  }
+
+  Timer? _timer;
+
+  // ===================================================================
+  // ESTADO E DADOS
   // ===================================================================
 
   // Estado da navegação
   int _selectedIndex = 0;
 
-  // Dados mockados do pet
+  // Dados mockados do pet (por enquanto continuam assim)
   final double _aguaConsumidaHoje = 290.0;
-  final double _metaAgua = 400.0;
-  final double _racaoConsumidaHoje = 155.0;
-  final double _metaRacao = 180.0;
-  final String _proximaRefeicao = '18:30';
-  final String _tempoAteProximaRefeicao = 'Em 2h 15min';
+  final double _metaAgua = 200.0;
+  final double _racaoConsumidaHoje = 135.0;
+  final double _metaRacao = 120.0;
+
+  // Próxima refeição (vindos da agenda)
+  RefeicaoProgramada? _proximaRefeicao;
+  Duration? _tempoRestante;
 
   // Dados do gráfico
   final List<FlSpot> _consumoSemanalSpots = const [
@@ -37,8 +63,7 @@ class InicialViewModel extends ChangeNotifier {
   ];
 
   // ===================================================================
-  // GETTERS (Dados já formatados e calculados pra View usar)
-  // A View não precisa saber como calcular, só pega o resultado pronto.
+  // GETTERS
   // ===================================================================
 
   int get selectedIndex => _selectedIndex;
@@ -46,19 +71,59 @@ class InicialViewModel extends ChangeNotifier {
   // Card de Água
   String get aguaConsumidaFormatada => '${_aguaConsumidaHoje.toInt()}ml';
   String get metaAguaFormatada => 'Meta: ${_metaAgua.toInt()}ml';
-  double get progressoAgua => _aguaConsumidaHoje / _metaAgua;
+  double get progressoAgua => _metaAgua == 0 ? 0 : _aguaConsumidaHoje / _metaAgua;
 
   // Card de Ração
   String get racaoConsumidaFormatada => '${_racaoConsumidaHoje.toInt()}g';
   String get metaRacaoFormatada => 'Meta: ${_metaRacao.toInt()}g';
-  double get progressoRacao => _racaoConsumidaHoje / _metaRacao;
+  double get progressoRacao => _metaRacao == 0 ? 0 : _racaoConsumidaHoje / _metaRacao;
 
-  // Card de Próxima Refeição
-  String get proximaRefeicao => _proximaRefeicao;
-  String get tempoAteProximaRefeicao => _tempoAteProximaRefeicao;
+  // Próxima refeição (AGORA REAL, via agenda)
+  String get proximaRefeicao {
+    if (_proximaRefeicao == null) return '--:--';
+    final h = _proximaRefeicao!.horario.hour.toString().padLeft(2, '0');
+    final m = _proximaRefeicao!.horario.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
+  String get tempoAteProximaRefeicao {
+    if (_tempoRestante == null) return 'Nenhuma refeição ativa';
+
+    final totalMin = _tempoRestante!.inMinutes;
+    if (totalMin <= 0) return 'Agora';
+
+    final horas = totalMin ~/ 60;
+    final minutos = totalMin % 60;
+
+    if (horas > 0 && minutos > 0) {
+      return 'Em ${horas}h ${minutos}min';
+    } else if (horas > 0) {
+      return 'Em ${horas}h';
+    } else {
+      return 'Em ${minutos}min';
+    }
+  }
 
   // Dados do Gráfico
   List<FlSpot> get consumoSemanalSpots => _consumoSemanalSpots;
+
+  // ===================================================================
+  // LÓGICA DA PRÓXIMA REFEIÇÃO
+  // ===================================================================
+
+  void _atualizarProximaRefeicao() {
+    final entry = agendaViewModel.getProximaRefeicaoEHorario();
+
+    if (entry == null) {
+      _proximaRefeicao = null;
+      _tempoRestante = null;
+    } else {
+      _proximaRefeicao = entry.key;
+      _tempoRestante = entry.value;
+    }
+
+    notifyListeners();
+  }
 
   // ===================================================================
   // MÉTODOS (Ações que a View pode chamar)
@@ -71,13 +136,15 @@ class InicialViewModel extends ChangeNotifier {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ChangeNotifierProvider<ConfiguracoesViewModel>(
-            create: (context) {
-              final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-              return ConfiguracoesViewModel(authViewModel);
-            },
-            child: TelaConfiguracoes(),
-          ),
+          builder: (context) =>
+              ChangeNotifierProvider<ConfiguracoesViewModel>(
+                create: (context) {
+                  final authViewModel =
+                  Provider.of<AuthViewModel>(context, listen: false);
+                  return ConfiguracoesViewModel(authViewModel);
+                },
+                child: TelaConfiguracoes(),
+              ),
         ),
       );
       // Não chamamos notifyListeners, porque a barra principal não muda
@@ -92,74 +159,62 @@ class InicialViewModel extends ChangeNotifier {
 
     switch (index) {
       case 0:
-      // Lógica para Visão Geral (índice 0)
-      // A TelaInicial já mostra a "Visão Geral" por padrão
+      // Visão Geral
         print("Item 'Visão Geral' selecionado.");
         break;
+
       case 1:
-      // Lógica para Agenda (índice 1)
+      // AGENDA
+      // IMPORTANTE: usa o MESMO TelaAgendaViewModel global,
+      // não cria outro ChangeNotifierProvider aqui.
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ChangeNotifierProvider<TelaAgendaViewModel>(
-              create: (context) {
-                // Obtém o AuthViewModel já fornecido para passá-lo ao ConfiguracoesViewModel
-                final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-                return TelaAgendaViewModel();
-              },
-              child: TelaAgenda(), // Remova o const se não for mais necessário
-            ),
+            builder: (context) => TelaAgenda(),
           ),
         );
         print("Item 'Agenda' selecionado.");
         break;
-        
-      case 2: // Lógica para Histórico
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const TelaHistorico()),
-        );
-        break;
-      case 3: // Config
-        print("Item 'Config' selecionado. Navegando para TelaConfiguracoes...");
+
+      case 2:
+      // Histórico
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ChangeNotifierProvider<ConfiguracoesViewModel>(
-              create: (context) {
-                // Obtém o AuthViewModel já fornecido para passá-lo ao ConfiguracoesViewModel
-                final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-                return ConfiguracoesViewModel(authViewModel);
-              },
-              child: TelaConfiguracoes(), // Remova o const se não for mais necessário
-            ),
+            builder: (context) => const TelaHistorico(),
           ),
         );
-        // IMPORTANTE: Se você navega para uma nova tela CHEIA (como TelaConfiguracoes),
-        // você geralmente NÃO quer que o _selectedIndex permaneça 3 quando voltar,
-        // pois a TelaInicial será a tela "por baixo".
-        // Considere resetar o _selectedIndex para o índice da tela principal (ex: 0)
-        // APÓS o Navigator.push, ou não atualizar o _selectedIndex aqui se a navegação
-        // for para uma tela completamente diferente que cobre a TelaInicial.
-        // Se a TelaConfiguracoes for uma sub-view DENTRO da TelaInicial, então manter
-        // _selectedIndex = 3 faz sentido.
-        //
-        // Para o seu caso, como TelaConfiguracoes é uma nova tela via MaterialPageRoute,
-        // o BottomNavigationBar da TelaInicial não será visível na TelaConfiguracoes.
-        // Quando você voltar da TelaConfiguracoes, o _selectedIndex ainda será 3,
-        // o que pode ou não ser o desejado.
-        //
-        // Uma abordagem comum é que o BottomNavigationBar controle apenas as seções
-        // PRINCIPAIS da tela atual. Se "Configurações" é uma tela totalmente separada,
-        // talvez não devesse mudar o selectedIndex da TelaInicial, ou deveria
-        // ser acessada por um botão diferente (ex: no AppBar).
-        //
-        // Se você quer que o item "Config" fique selecionado E navegue, o código atual
-        // está bom. Apenas esteja ciente do comportamento do selectedIndex ao voltar.
         break;
-        
+
+      case 3:
+      // (já tratado acima, mas mantive por segurança)
+        print(
+            "Item 'Config' selecionado. Navegando para TelaConfiguracoes...");
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                ChangeNotifierProvider<ConfiguracoesViewModel>(
+                  create: (context) {
+                    final authViewModel =
+                    Provider.of<AuthViewModel>(context, listen: false);
+                    return ConfiguracoesViewModel(authViewModel);
+                  },
+                  child: TelaConfiguracoes(),
+                ),
+          ),
+        );
+        break;
+
       default:
         print("Índice de item desconhecido: $index");
     }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    agendaViewModel.removeListener(_atualizarProximaRefeicao);
+    super.dispose();
   }
 }

@@ -35,7 +35,6 @@ class TelaAgendaViewModel extends ChangeNotifier {
   String _keyAtiva(int index) => 'refeicao_${index}_ativa';
   String _keyId(int index) => 'refeicao_${index}_id';
 
-
   Future<void> carregarPerfil() async {
     final prefs = await SharedPreferences.getInstance();
     _perfilHorarios.clear(); // Limpa a lista antes de carregar
@@ -50,13 +49,19 @@ class TelaAgendaViewModel extends ChangeNotifier {
         final ativa = prefs.getBool(_keyAtiva(i));
         final id = prefs.getString(_keyId(i));
 
-        if (hour != null && minute != null && quantidade != null && ativa != null && id != null) {
-          _perfilHorarios.add(RefeicaoProgramada(
-            horario: TimeOfDay(hour: hour, minute: minute),
-            quantidade: quantidade,
-            ativa: ativa,
-            id: id,
-          ));
+        if (hour != null &&
+            minute != null &&
+            quantidade != null &&
+            ativa != null &&
+            id != null) {
+          _perfilHorarios.add(
+            RefeicaoProgramada(
+              horario: TimeOfDay(hour: hour, minute: minute),
+              quantidade: quantidade,
+              ativa: ativa,
+              id: id,
+            ),
+          );
         }
       }
     }
@@ -77,9 +82,10 @@ class TelaAgendaViewModel extends ChangeNotifier {
         await prefs.setBool(_keyAtiva(i), refeicao.ativa);
         await prefs.setString(_keyId(i), refeicao.id);
       }
-      // Se houveram mais refeições salvas anteriormente do que agora, precisamos limpar as antigas.
-      // Isso é importante se o usuário deletou refeições.
-      int? totalSalvoAnteriormente = prefs.getInt('total_refeicoes_salvas_anteriormente'); // Chave auxiliar
+
+      // Limpa posições antigas, se existirem
+      int? totalSalvoAnteriormente =
+      prefs.getInt('total_refeicoes_salvas_anteriormente'); // Chave auxiliar
       if (totalSalvoAnteriormente != null) {
         for (int i = _perfilHorarios.length; i < totalSalvoAnteriormente; i++) {
           await prefs.remove(_keyHorarioHour(i));
@@ -89,8 +95,8 @@ class TelaAgendaViewModel extends ChangeNotifier {
           await prefs.remove(_keyId(i));
         }
       }
-      await prefs.setInt('total_refeicoes_salvas_anteriormente', _perfilHorarios.length);
-
+      await prefs.setInt(
+          'total_refeicoes_salvas_anteriormente', _perfilHorarios.length);
 
       print("Perfil de horários salvo no SharedPreferences. Total: ${_perfilHorarios.length}");
       notifyListeners();
@@ -106,7 +112,8 @@ class TelaAgendaViewModel extends ChangeNotifier {
   // CREATE: Adicionar uma nova refeição programada
   void adicionarNovaRefeicao() {
     // Cria um ID único simples (para este exemplo)
-    String novoId = DateTime.now().millisecondsSinceEpoch.toString() + Random().nextInt(1000).toString();
+    String novoId =
+        DateTime.now().millisecondsSinceEpoch.toString() + Random().nextInt(1000).toString();
     _perfilHorarios.add(
       RefeicaoProgramada(
         horario: TimeOfDay.now(), // Horário atual como padrão
@@ -125,13 +132,10 @@ class TelaAgendaViewModel extends ChangeNotifier {
     _perfilHorarios.removeAt(index);
     notifyListeners();
     // O salvamento (e a efetiva remoção do SharedPreferences) ocorrerá
-    // quando o usuário clicar em "Salvar Configurações", pois o salvarPerfil
-    // irá salvar a lista atual, que é menor.
+    // quando o usuário clicar em "Salvar Configurações"
   }
 
-
   // --- MÉTODOS DE ATUALIZAÇÃO (UPDATE) ---
-  // (Estes permanecem os mesmos, mas operam sobre a lista dinâmica)
 
   void atualizarHorarioRefeicao(int index, TimeOfDay novoHorario) {
     if (index < 0 || index >= _perfilHorarios.length) return;
@@ -151,17 +155,47 @@ class TelaAgendaViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-// O método limparRefeicao não faz mais sentido no contexto de deletar definitivamente.
-// Se o usuário quiser "limpar" um item, ele pode editar seus campos para vazios/padrão.
-// Ou podemos mantê-lo se você ainda quiser um "reset" rápido para um item existente.
-// Por enquanto, vou comentá-lo para evitar confusão com o "removerDefinitivamente".
-/*
-  void limparRefeicao(int index) {
-    if (index < 0 || index >= _perfilHorarios.length) return;
-    _perfilHorarios[index].horario = TimeOfDay(hour: 8 + index * 4, minute: 0);
-    _perfilHorarios[index].quantidade = "";
-    _perfilHorarios[index].ativa = false;
-    notifyListeners();
+  // RETORNA: Um "MapEntry" contendo a Refeição e a Duração até ela,
+  // ou null se não houver nenhuma refeição ativa.
+  MapEntry<RefeicaoProgramada, Duration>? getProximaRefeicaoEHorario() {
+    if (_perfilHorarios.isEmpty) return null;
+
+    final now = DateTime.now();
+    RefeicaoProgramada? proximaRefeicao;
+    Duration? menorDiferenca;
+
+    // 1. Filtra apenas as refeições ativas
+    final refeicoesAtivas = _perfilHorarios.where((r) => r.ativa);
+    if (refeicoesAtivas.isEmpty) return null;
+
+    for (var refeicao in refeicoesAtivas) {
+      // Constrói um objeto DateTime para o horário de hoje
+      DateTime horarioRefeicao = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        refeicao.horario.hour,
+        refeicao.horario.minute,
+      );
+
+      // Se o horário de hoje já passou, calcula para amanhã.
+      if (horarioRefeicao.isBefore(now)) {
+        horarioRefeicao = horarioRefeicao.add(const Duration(days: 1));
+      }
+
+      // Calcula a diferença
+      final diferenca = horarioRefeicao.difference(now);
+
+      // 2. Acha a menor diferença (a mais próxima)
+      if (menorDiferenca == null || diferenca < menorDiferenca) {
+        menorDiferenca = diferenca;
+        proximaRefeicao = refeicao;
+      }
+    }
+
+    if (proximaRefeicao == null || menorDiferenca == null) return null;
+
+    // 3. Retorna os dois valores juntos
+    return MapEntry(proximaRefeicao, menorDiferenca);
   }
-  */
 }

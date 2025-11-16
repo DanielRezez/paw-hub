@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:projeto_integrador2/views/wrapper.dart';
 import 'package:firebase_core/firebase_core.dart';
+
 import 'package:projeto_integrador2/viewmodels/auth_viewmodel.dart';
-import 'package:projeto_integrador2/viewmodels/sensor_viewmodel.dart'; // Adicionado
-// Corrigido para seu ViewModel
+import 'package:projeto_integrador2/viewmodels/sensor_viewmodel.dart';
+import 'package:projeto_integrador2/viewmodels/agenda_viewmodel.dart';
+import 'package:projeto_integrador2/viewmodels/inicial_viewmodel.dart';
 
 // --- ATENÇÃO ---
-// Garanta que você tem esses arquivos com suas definições de cores e fontes
 import 'package:projeto_integrador2/utils/cores.dart';
 import 'package:projeto_integrador2/utils/tipografia.dart';
 
@@ -19,8 +20,27 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        // Providers originais
         ChangeNotifierProvider(create: (context) => AuthViewModel()),
-        ChangeNotifierProvider(create: (context) => SensorViewModel()), // Adicionado
+        ChangeNotifierProvider(create: (context) => SensorViewModel()),
+
+        // 1. Fonte da verdade da Agenda (global)
+        ChangeNotifierProvider(
+          create: (context) => TelaAgendaViewModel(),
+        ),
+
+        // 2. InicialViewModel recebe o TelaAgendaViewModel
+        ChangeNotifierProxyProvider<TelaAgendaViewModel, InicialViewModel>(
+          create: (context) {
+            final agendaVM =
+            Provider.of<TelaAgendaViewModel>(context, listen: false);
+            return InicialViewModel(agendaVM);
+          },
+          update: (context, agendaVM, inicialAnterior) {
+            // Se já existir, reaproveita; se não, cria com o agendaVM
+            return inicialAnterior ?? InicialViewModel(agendaVM);
+          },
+        ),
       ],
       child: const MyApp(),
     ),
@@ -34,16 +54,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'PetCare Monitor', // Adicionado um título
+      title: 'PetCare Monitor',
       theme: ThemeData(
         textTheme: tipografia,
         scaffoldBackgroundColor: corOffWhite,
         primaryColor: corVerdeAgua,
         colorScheme: ColorScheme.fromSwatch().copyWith(
-          primary: corBeringela, // Usado em alguns lugares
+          primary: corBeringela,
           secondary: corPesce,
-          surface: corOffWhite, // Cor de fundo principal
-          onSurface: const Color(0xFF0D1B2A), // Cor para textos em cima de 'surface'
+          surface: corOffWhite,
+          onSurface: const Color(0xFF0D1B2A),
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: corBeringela,
