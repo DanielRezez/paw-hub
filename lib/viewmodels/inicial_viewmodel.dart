@@ -196,26 +196,7 @@ class InicialViewModel extends ChangeNotifier {
 
   // Chamado quando o usuário clica em um item da barra de navegação
   void onItemTapped(int index, BuildContext context) {
-    // Se for Configurações (índice 3), apenas navega para a tela, sem alterar _selectedIndex
-    if (index == 3) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              ChangeNotifierProvider<ConfiguracoesViewModel>(
-                create: (context) {
-                  final authViewModel =
-                  Provider.of<AuthViewModel>(context, listen: false);
-                  return ConfiguracoesViewModel(authViewModel);
-                },
-                child: const TelaConfiguracoes(),
-              ),
-        ),
-      );
-      return;
-    }
-
-    // Para abas normais (0, 1, 2), atualiza o índice e notifica a UI
+    // Atualiza o índice selecionado para TODOS os itens, inclusive Config
     if (_selectedIndex != index) {
       _selectedIndex = index;
       notifyListeners();
@@ -223,10 +204,12 @@ class InicialViewModel extends ChangeNotifier {
 
     switch (index) {
       case 0:
+      // Visão Geral: já estamos na TelaInicial, nada pra fazer
         print("Item 'Visão Geral' selecionado.");
         break;
 
       case 1:
+      // Agenda
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -237,6 +220,7 @@ class InicialViewModel extends ChangeNotifier {
         break;
 
       case 2:
+      // Histórico
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -246,7 +230,21 @@ class InicialViewModel extends ChangeNotifier {
         break;
 
       case 3:
-      // já tratado lá em cima
+      // Configurações
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                ChangeNotifierProvider<ConfiguracoesViewModel>(
+                  create: (context) {
+                    final authViewModel =
+                    Provider.of<AuthViewModel>(context, listen: false);
+                    return ConfiguracoesViewModel(authViewModel);
+                  },
+                  child: const TelaConfiguracoes(),
+                ),
+          ),
+        );
         break;
 
       default:
