@@ -13,116 +13,98 @@ import 'auth_viewmodel.dart';
 import 'configuracoes_viewmodel.dart';
 
 class InicialViewModel extends ChangeNotifier {
-  // ===================================================================
-  // CONSTANTES
-  // ===================================================================
-
-  // chave pro SharedPreferences (ração consumida hoje)
+  // chaves pro SharedPreferences
   static const String _keyRacaoConsumidaHoje = 'racao_consumida_hoje';
-
-  // ===================================================================
-  // DEPENDÊNCIAS
-  // ===================================================================
+  static const String _keyAguaConsumidaHoje = 'agua_consumida_hoje';
 
   final TelaAgendaViewModel agendaViewModel;
 
   InicialViewModel(this.agendaViewModel) {
-    // Atualiza assim que criar
     _atualizarProximaRefeicao();
-
-    // Atualiza sempre que a agenda mudar (ex.: usuário salvar a agenda)
     agendaViewModel.addListener(_onAgendaChanged);
 
-    // Timer para contagem regressiva ficar em tempo quase real
     _timer = Timer.periodic(
       const Duration(seconds: 1),
           (_) => _atualizarProximaRefeicao(),
     );
 
-    // Carrega o valor de ração consumida salvo anteriormente
     _carregarRacaoConsumida();
+    _carregarAguaConsumida();
   }
 
   void _onAgendaChanged() {
-    // Quando a agenda muda, atualiza próxima refeição e meta de ração
     _atualizarProximaRefeicao();
     notifyListeners();
   }
 
   Timer? _timer;
 
-  // ===================================================================
-  // ESTADO E DADOS
-  // ===================================================================
-
-  // Estado da navegação
   int _selectedIndex = 0;
 
-  // Água (por enquanto mantém mockado)
-  double _aguaConsumidaHoje = 290.0;
-  double _metaAgua = 200.0;
-
-  // Ração – consumo do dia (meta vem da Agenda)
+  double _aguaConsumidaHoje = 0.0;
   double _racaoConsumidaHoje = 0.0;
 
-  // Próxima refeição (vindos da agenda)
   RefeicaoProgramada? _proximaRefeicao;
   Duration? _tempoRestante;
 
-  // Dados do gráfico
   final List<FlSpot> _consumoSemanalSpots = const [
-    FlSpot(0, 250), // Seg
-    FlSpot(1, 310), // Ter
-    FlSpot(2, 290), // Qua
-    FlSpot(3, 320), // Qui
-    FlSpot(4, 300), // Sex
-    FlSpot(5, 315), // Sáb
-    FlSpot(6, 295), // Dom
+    FlSpot(0, 250),
+    FlSpot(1, 310),
+    FlSpot(2, 290),
+    FlSpot(3, 320),
+    FlSpot(4, 300),
+    FlSpot(5, 315),
+    FlSpot(6, 295),
   ];
-
-  // ===================================================================
-  // GETTERS
-  // ===================================================================
 
   int get selectedIndex => _selectedIndex;
 
-  // Água
-  String get aguaConsumidaFormatada => '${_aguaConsumidaHoje.toInt()}ml';
-  String get metaAguaFormatada => 'Meta: ${_metaAgua.toInt()}ml';
-  double get progressoAgua =>
-      _metaAgua == 0 ? 0 : _aguaConsumidaHoje / _metaAgua;
+  // ===== ÁGUA =====
 
-  // ====== Ração (meta vinda da Agenda) ======
-
-  /// Meta diária de ração (soma das quantidades das refeições ATIVAS)
-  double get metaRacaoDiaria {
+  double get metaAguaDiaria {
     double total = 0;
-
     for (final refeicao
     in agendaViewModel.perfilHorarios.where((r) => r.ativa)) {
-      final q = _parseQuantidadeEmGramas(refeicao.quantidade);
-      total += q;
+      total += _parseNumero(refeicao.quantidadeAgua);
     }
-
     return total;
   }
 
-  /// Texto "25g"
+  String get aguaConsumidaFormatada =>
+      '${_aguaConsumidaHoje.toStringAsFixed(0)}ml';
+
+  String get metaAguaFormatada =>
+      'Meta: ${metaAguaDiaria.toStringAsFixed(0)}ml';
+
+  double get progressoAgua =>
+      metaAguaDiaria <= 0 ? 0 : _aguaConsumidaHoje / metaAguaDiaria;
+
+  double get aguaConsumidaHoje => _aguaConsumidaHoje;
+
+  // ===== RAÇÃO =====
+
+  double get metaRacaoDiaria {
+    double total = 0;
+    for (final refeicao
+    in agendaViewModel.perfilHorarios.where((r) => r.ativa)) {
+      total += _parseNumero(refeicao.quantidadeRacao);
+    }
+    return total;
+  }
+
   String get racaoConsumidaFormatada =>
       '${_racaoConsumidaHoje.toStringAsFixed(0)}g';
 
-  /// Texto "Meta: 50g"
   String get metaRacaoFormatada =>
       'Meta: ${metaRacaoDiaria.toStringAsFixed(0)}g';
 
-  /// Progresso (0.0 a 1.0)
   double get progressoRacao =>
       metaRacaoDiaria <= 0 ? 0 : _racaoConsumidaHoje / metaRacaoDiaria;
 
-  /// Valor cru, pra usar no diálogo
   double get racaoConsumidaHoje => _racaoConsumidaHoje;
 
-  // Próxima refeição (AGORA REAL, via agenda)
+  // ===== Próxima refeição =====
+
   String get proximaRefeicao {
     if (_proximaRefeicao == null) return '--:--';
     final h = _proximaRefeicao!.horario.hour.toString().padLeft(2, '0');
@@ -148,12 +130,7 @@ class InicialViewModel extends ChangeNotifier {
     }
   }
 
-  // Dados do Gráfico
   List<FlSpot> get consumoSemanalSpots => _consumoSemanalSpots;
-
-  // ===================================================================
-  // LÓGICA DA PRÓXIMA REFEIÇÃO
-  // ===================================================================
 
   void _atualizarProximaRefeicao() {
     final entry = agendaViewModel.getProximaRefeicaoEHorario();
@@ -169,18 +146,20 @@ class InicialViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ===================================================================
-  // PERSISTÊNCIA – Ração consumida
-  // ===================================================================
+  // ===== Persistência =====
 
   Future<void> _carregarRacaoConsumida() async {
     final prefs = await SharedPreferences.getInstance();
-    _racaoConsumidaHoje =
-        prefs.getDouble(_keyRacaoConsumidaHoje) ?? 0.0;
+    _racaoConsumidaHoje = prefs.getDouble(_keyRacaoConsumidaHoje) ?? 0.0;
     notifyListeners();
   }
 
-  /// Atualiza o valor consumido de ração (em gramas) e salva no SharedPreferences
+  Future<void> _carregarAguaConsumida() async {
+    final prefs = await SharedPreferences.getInstance();
+    _aguaConsumidaHoje = prefs.getDouble(_keyAguaConsumidaHoje) ?? 0.0;
+    notifyListeners();
+  }
+
   Future<void> atualizarRacaoConsumida(double novoValor) async {
     if (novoValor < 0) novoValor = 0;
     _racaoConsumidaHoje = novoValor;
@@ -190,13 +169,18 @@ class InicialViewModel extends ChangeNotifier {
     await prefs.setDouble(_keyRacaoConsumidaHoje, _racaoConsumidaHoje);
   }
 
-  // ===================================================================
-  // AÇÕES DA VIEW
-  // ===================================================================
+  Future<void> atualizarAguaConsumida(double novoValor) async {
+    if (novoValor < 0) novoValor = 0;
+    _aguaConsumidaHoje = novoValor;
+    notifyListeners();
 
-  // Chamado quando o usuário clica em um item da barra de navegação
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_keyAguaConsumidaHoje, _aguaConsumidaHoje);
+  }
+
+  // ===== Navegação =====
+
   void onItemTapped(int index, BuildContext context) {
-    // Atualiza o índice selecionado para TODOS os itens, inclusive Config
     if (_selectedIndex != index) {
       _selectedIndex = index;
       notifyListeners();
@@ -204,23 +188,17 @@ class InicialViewModel extends ChangeNotifier {
 
     switch (index) {
       case 0:
-      // Visão Geral: já estamos na TelaInicial, nada pra fazer
         print("Item 'Visão Geral' selecionado.");
         break;
-
       case 1:
-      // Agenda
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => const TelaAgenda(),
           ),
         );
-        print("Item 'Agenda' selecionado.");
         break;
-
       case 2:
-      // Histórico
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -228,9 +206,7 @@ class InicialViewModel extends ChangeNotifier {
           ),
         );
         break;
-
       case 3:
-      // Configurações
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -246,24 +222,16 @@ class InicialViewModel extends ChangeNotifier {
           ),
         );
         break;
-
       default:
         print("Índice de item desconhecido: $index");
     }
   }
 
-  // ===================================================================
-  // HELPERS
-  // ===================================================================
+  // ===== Helper pra extrair número de strings tipo "50g" ou "200ml" =====
 
-  /// Tenta extrair um número da string de quantidade, em gramas.
-  /// Exemplos:
-  /// "200g" -> 200
-  /// "50 g, 1 porção" -> 50
-  /// "abc" -> 0
-  double _parseQuantidadeEmGramas(String quantidade) {
+  double _parseNumero(String texto) {
     final regex = RegExp(r'(\d+(\,\d+)?(\.\d+)?)');
-    final match = regex.firstMatch(quantidade);
+    final match = regex.firstMatch(texto);
     if (match == null) return 0;
 
     final raw = match.group(0) ?? '';

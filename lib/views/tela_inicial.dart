@@ -53,6 +53,15 @@ class TelaInicial extends StatelessWidget {
                     meta: viewModel.metaAguaFormatada,
                     progress: viewModel.progressoAgua,
                     progressColor: Colors.blue.shade300,
+                    onTap: () async {
+                      final novoValor = await _mostrarDialogoAgua(
+                        context,
+                        viewModel.aguaConsumidaHoje,
+                      );
+                      if (novoValor != null) {
+                        await viewModel.atualizarAguaConsumida(novoValor);
+                      }
+                    },
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -70,7 +79,7 @@ class TelaInicial extends StatelessWidget {
                         viewModel.racaoConsumidaHoje,
                       );
                       if (novoValor != null) {
-                        viewModel.atualizarRacaoConsumida(novoValor);
+                        await viewModel.atualizarRacaoConsumida(novoValor);
                       }
                     },
                   ),
@@ -93,7 +102,7 @@ class TelaInicial extends StatelessWidget {
                   child: _buildAlertCard(
                     icon: Icons.warning_amber_rounded,
                     title: 'Alertas',
-                    alertText: 'Água baixa',
+                    alertText: 'Ração baixa',
                     actionText: 'Reabastecer tigela',
                   ),
                 ),
@@ -156,6 +165,47 @@ class TelaInicial extends StatelessWidget {
             decoration: const InputDecoration(
               labelText: 'Quantidade (g)',
               hintText: 'Ex: 100',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                final raw = controller.text.trim().replaceAll(',', '.');
+                final valor = double.tryParse(raw);
+                Navigator.of(ctx).pop(valor);
+              },
+              child: const Text('Salvar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ============== Diálogo pra editar água consumida ==============
+
+  Future<double?> _mostrarDialogoAgua(
+      BuildContext context, double valorAtual) async {
+    final controller = TextEditingController(
+      text: valorAtual.toStringAsFixed(0),
+    );
+
+    return showDialog<double>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Atualizar água consumida'),
+          content: TextField(
+            controller: controller,
+            keyboardType:
+            const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: 'Quantidade (ml)',
+              hintText: 'Ex: 200',
             ),
           ),
           actions: [
@@ -415,7 +465,7 @@ class TelaInicial extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Text(
-              'Água baixa',
+              'Ração baixa',
               style: TextStyle(
                   color: Colors.white, fontWeight: FontWeight.bold),
             ),

@@ -9,17 +9,18 @@ class TelaAgenda extends StatelessWidget {
       builder: (context, viewModel, child) {
         return Scaffold(
           appBar: AppBar(
-            title: Text('Agenda'), // Título original restaurado
+            title: const Text('Agenda'),
             actions: [
               IconButton(
-                icon: Icon(Icons.save),
+                icon: const Icon(Icons.save),
                 tooltip: 'Salvar Configurações',
                 onPressed: () async {
                   bool success = await viewModel.salvarPerfil();
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(success ? 'Configurações salvas!' : 'Erro ao salvar.'),
+                        content: Text(
+                            success ? 'Configurações salvas!' : 'Erro ao salvar.'),
                         backgroundColor: success ? Colors.green : Colors.red,
                       ),
                     );
@@ -49,29 +50,40 @@ class TelaAgenda extends StatelessWidget {
                           children: [
                             Text(
                               'Refeição ${index + 1}',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete_forever_outlined, color: Colors.redAccent),
+                              icon: const Icon(Icons.delete_forever_outlined,
+                                  color: Colors.redAccent),
                               tooltip: 'Remover esta refeição',
                               onPressed: () {
                                 showDialog(
                                   context: context,
                                   builder: (BuildContext dialogContext) {
                                     return AlertDialog(
-                                      title: Text('Remover Refeição ${index + 1}?'),
-                                      content: Text('Esta ação é permanente e removerá a refeição da lista. A alteração será salva ao clicar no ícone de salvar na barra superior.'),
+                                      title:
+                                      Text('Remover Refeição ${index + 1}?'),
+                                      content: const Text(
+                                          'Esta ação é permanente e removerá a refeição da lista. '
+                                              'A alteração será salva ao clicar no ícone de salvar na barra superior.'),
                                       actions: <Widget>[
                                         TextButton(
-                                          child: Text('Cancelar'),
+                                          child: const Text('Cancelar'),
                                           onPressed: () {
                                             Navigator.of(dialogContext).pop();
                                           },
                                         ),
                                         TextButton(
-                                          child: Text('Remover', style: TextStyle(color: Colors.redAccent)),
+                                          child: const Text('Remover',
+                                              style: TextStyle(
+                                                  color: Colors.redAccent)),
                                           onPressed: () {
-                                            viewModel.removerRefeicaoDefinitivamente(index);
+                                            viewModel
+                                                .removerRefeicaoDefinitivamente(
+                                                index);
                                             Navigator.of(dialogContext).pop();
                                           },
                                         ),
@@ -83,15 +95,22 @@ class TelaAgenda extends StatelessWidget {
                             ),
                           ],
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Horário:', style: Theme.of(context).textTheme.titleMedium),
+                            Text('Horário:',
+                                style:
+                                Theme.of(context).textTheme.titleMedium),
                             TextButton(
                               child: Text(
                                 refeicao.horario.format(context),
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.blueAccent, fontWeight: FontWeight.bold),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                    color: Colors.blueAccent,
+                                    fontWeight: FontWeight.bold),
                               ),
                               onPressed: () async {
                                 TimeOfDay? novoHorario = await showTimePicker(
@@ -99,36 +118,66 @@ class TelaAgenda extends StatelessWidget {
                                   initialTime: refeicao.horario,
                                 );
                                 if (novoHorario != null) {
-                                  viewModel.atualizarHorarioRefeicao(index, novoHorario);
+                                  viewModel.atualizarHorarioRefeicao(
+                                      index, novoHorario);
                                 }
                               },
                             ),
                           ],
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
+
+                        // ======= QUANTIDADE RAÇÃO =======
                         TextFormField(
-                          initialValue: refeicao.quantidade,
-                          decoration: InputDecoration(
-                            labelText: 'Quantidade',
+                          initialValue: refeicao.quantidadeRacao,
+                          decoration: const InputDecoration(
+                            labelText: 'Quantidade de ração',
                             hintText: 'ex: 50g, 1 porção',
                             border: OutlineInputBorder(),
                             isDense: true,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 12),
                           ),
                           keyboardType: TextInputType.text,
                           onChanged: (novaQuantidade) {
-                            viewModel.atualizarQuantidadeRefeicao(index, novaQuantidade);
+                            viewModel.atualizarQuantidadeRacaoRefeicao(
+                                index, novaQuantidade);
                           },
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
+
+                        // ======= QUANTIDADE ÁGUA =======
+                        TextFormField(
+                          initialValue: refeicao.quantidadeAgua,
+                          decoration: const InputDecoration(
+                            labelText: 'Quantidade de água (ml)',
+                            hintText: 'ex: 200ml',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 12),
+                          ),
+                          keyboardType:
+                          const TextInputType.numberWithOptions(
+                              decimal: true),
+                          onChanged: (novaQuantidadeAgua) {
+                            viewModel.atualizarQuantidadeAguaRefeicao(
+                                index, novaQuantidadeAgua);
+                          },
+                        ),
+                        const SizedBox(height: 8),
+
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Ativar Refeição:', style: Theme.of(context).textTheme.titleMedium),
+                            Text('Ativar Refeição:',
+                                style:
+                                Theme.of(context).textTheme.titleMedium),
                             Switch(
                               value: refeicao.ativa,
                               activeThumbColor: Colors.teal,
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                               onChanged: (ativada) {
                                 viewModel.toggleAtivacaoRefeicao(index);
                               },
@@ -147,7 +196,7 @@ class TelaAgenda extends StatelessWidget {
               viewModel.adicionarNovaRefeicao();
             },
             tooltip: 'Adicionar Nova Refeição',
-            child: Icon(Icons.add),
+            child: const Icon(Icons.add),
           ),
         );
       },
