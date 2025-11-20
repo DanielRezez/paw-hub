@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+import 'package:projeto_integrador2/viewmodels/configuracoes_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 import 'package:projeto_integrador2/views/tela_configuracoes.dart';
@@ -11,7 +12,7 @@ void main() {
     late MockConfiguracoesViewModel mockViewModel;
 
     Widget createWidgetUnderTest() {
-      return ChangeNotifierProvider<MockConfiguracoesViewModel>.value(
+      return ChangeNotifierProvider<ConfiguracoesViewModel>.value(
         value: mockViewModel,
         child: const MaterialApp(
           home: TelaConfiguracoes(),
