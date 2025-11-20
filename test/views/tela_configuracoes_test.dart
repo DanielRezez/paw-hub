@@ -4,7 +4,7 @@ import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 
 import 'package:projeto_integrador2/views/tela_configuracoes.dart';
-import '../mocks/mock_configuracoes_viewmodel.dart';
+import '../mocks/config_vm.mocks.mocks.dart';
 
 void main() {
   group('TelaConfiguracoes - Testes de Widget com Mockito', () {
