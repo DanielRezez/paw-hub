@@ -127,14 +127,6 @@ class MockAuthViewModel extends _i1.Mock implements _i5.AuthViewModel {
           as bool);
 
   @override
-  _i3.Future<bool> signUp(String? email, String? password) =>
-      (super.noSuchMethod(
-            Invocation.method(#signUp, [email, password]),
-            returnValue: _i3.Future<bool>.value(false),
-          )
-          as _i3.Future<bool>);
-
-  @override
   _i3.Future<bool> signIn(String? email, String? password) =>
       (super.noSuchMethod(
             Invocation.method(#signIn, [email, password]),
@@ -143,13 +135,20 @@ class MockAuthViewModel extends _i1.Mock implements _i5.AuthViewModel {
           as _i3.Future<bool>);
 
   @override
-  _i3.Future<void> signOutGoogle() =>
+  _i3.Future<bool> signUp(String? email, String? password) =>
       (super.noSuchMethod(
-            Invocation.method(#signOutGoogle, []),
-            returnValue: _i3.Future<void>.value(),
-            returnValueForMissingStub: _i3.Future<void>.value(),
+            Invocation.method(#signUp, [email, password]),
+            returnValue: _i3.Future<bool>.value(false),
           )
-          as _i3.Future<void>);
+          as _i3.Future<bool>);
+
+  @override
+  _i3.Future<bool> signInWithGoogle() =>
+      (super.noSuchMethod(
+            Invocation.method(#signInWithGoogle, []),
+            returnValue: _i3.Future<bool>.value(false),
+          )
+          as _i3.Future<bool>);
 
   @override
   _i3.Future<void> signOutAll() =>
@@ -159,14 +158,6 @@ class MockAuthViewModel extends _i1.Mock implements _i5.AuthViewModel {
             returnValueForMissingStub: _i3.Future<void>.value(),
           )
           as _i3.Future<void>);
-
-  @override
-  _i3.Future<bool> signInWithGoogle() =>
-      (super.noSuchMethod(
-            Invocation.method(#signInWithGoogle, []),
-            returnValue: _i3.Future<bool>.value(false),
-          )
-          as _i3.Future<bool>);
 
   @override
   void addListener(_i4.VoidCallback? listener) => super.noSuchMethod(

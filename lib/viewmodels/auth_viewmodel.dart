@@ -1,4 +1,3 @@
-// lib/viewmodels/auth_viewmodel.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/i_auth_service.dart';
@@ -47,11 +46,13 @@ class AuthViewModel with ChangeNotifier {
 
     try {
       final user = await _authService.signIn(email, password);
-      if (user != null) return true;
 
-      _status = AuthStatus.unauthenticated;
+      // Atualiza status e usuário imediatamente
+      _user = user;
+      _status = user != null ? AuthStatus.authenticated : AuthStatus.unauthenticated;
       notifyListeners();
-      return false;
+
+      return user != null;
     } catch (e) {
       _status = AuthStatus.error;
       _errorMessage = e.toString();
@@ -67,11 +68,13 @@ class AuthViewModel with ChangeNotifier {
 
     try {
       final user = await _authService.signUp(email, password);
-      if (user != null) return true;
 
-      _status = AuthStatus.unauthenticated;
+      // Atualiza status e usuário imediatamente
+      _user = user;
+      _status = user != null ? AuthStatus.authenticated : AuthStatus.unauthenticated;
       notifyListeners();
-      return false;
+
+      return user != null;
     } catch (e) {
       _status = AuthStatus.error;
       _errorMessage = e.toString();
@@ -87,6 +90,12 @@ class AuthViewModel with ChangeNotifier {
 
     try {
       final user = await _authService.signInWithGoogle();
+
+      // Atualiza status e usuário imediatamente
+      _user = user;
+      _status = user != null ? AuthStatus.authenticated : AuthStatus.unauthenticated;
+      notifyListeners();
+
       return user != null;
     } catch (e) {
       _status = AuthStatus.error;
