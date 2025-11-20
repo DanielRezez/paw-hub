@@ -7,12 +7,18 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('TelaAgendaViewModel - Testes Unitários', () {
+    late SharedPreferences prefs;
     late TelaAgendaViewModel viewModel;
 
-    setUp(() {
+    setUp(() async {
       // Limpa SharedPreferences para cada teste
       SharedPreferences.setMockInitialValues({});
-      viewModel = TelaAgendaViewModel();
+      prefs = await SharedPreferences.getInstance();
+
+      viewModel = TelaAgendaViewModel(mockPrefs: prefs);
+
+      await Future.delayed(Duration.zero);
+      //await viewModel.init();
     });
 
     test('Adicionar uma nova refeição deve aumentar a lista em 1', () async {
@@ -63,6 +69,8 @@ void main() {
       });
 
       viewModel = TelaAgendaViewModel();
+
+      await Future.delayed(Duration.zero);
 
       expect(viewModel.perfilHorarios.length, 1);
       expect(viewModel.perfilHorarios[0].quantidade, '180g');
