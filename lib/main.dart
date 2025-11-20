@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_integrador2/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:projeto_integrador2/views/wrapper.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -19,7 +20,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => AuthViewModel()),
+        ChangeNotifierProvider(create: (context) => AuthViewModel(AuthService())),
         ChangeNotifierProvider(create: (context) => SensorViewModel()), // Adicionado
       ],
       child: const MyApp(),
