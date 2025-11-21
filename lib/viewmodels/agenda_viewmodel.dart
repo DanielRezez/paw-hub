@@ -20,11 +20,19 @@ class RefeicaoProgramada {
 }
 
 class TelaAgendaViewModel extends ChangeNotifier {
+  late SharedPreferences prefs;
+
+  // Agora uma lista dinâmica, não mais com 3 slots fixos.
   final List<RefeicaoProgramada> _perfilHorarios = [];
   List<RefeicaoProgramada> get perfilHorarios => _perfilHorarios;
 
-  TelaAgendaViewModel() {
-    carregarPerfil();
+  TelaAgendaViewModel({SharedPreferences? mockPrefs}) {
+    _init(mockPrefs);
+  }
+
+  Future<void> _init(SharedPreferences? mockPrefs) async {
+    prefs = mockPrefs ?? await SharedPreferences.getInstance();
+    await carregarPerfil();
   }
 
   // Chaves base para SharedPreferences
@@ -41,8 +49,8 @@ class TelaAgendaViewModel extends ChangeNotifier {
   String _keyId(int index) => 'refeicao_${index}_id';
 
   Future<void> carregarPerfil() async {
-    final prefs = await SharedPreferences.getInstance();
-    _perfilHorarios.clear();
+    //final prefs = await SharedPreferences.getInstance();
+    _perfilHorarios.clear(); // Limpa a lista antes de carregar
 
     final int? numeroDeRefeicoes = prefs.getInt(_keyNumeroRefeicoes);
     print('>> carregarPerfil: numero_refeicoes = $numeroDeRefeicoes');
@@ -80,7 +88,7 @@ class TelaAgendaViewModel extends ChangeNotifier {
   }
 
   Future<bool> salvarPerfil() async {
-    final prefs = await SharedPreferences.getInstance();
+    //final prefs = await SharedPreferences.getInstance();
     try {
       await prefs.setInt(_keyNumeroRefeicoes, _perfilHorarios.length);
 

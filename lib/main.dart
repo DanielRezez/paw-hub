@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projeto_integrador2/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:projeto_integrador2/views/wrapper.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -20,27 +21,8 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        // Providers originais
-        ChangeNotifierProvider(create: (context) => AuthViewModel()),
-        ChangeNotifierProvider(create: (context) => SensorViewModel()),
-
-        // 1. Fonte da verdade da Agenda (global)
-        ChangeNotifierProvider(
-          create: (context) => TelaAgendaViewModel(),
-        ),
-
-        // 2. InicialViewModel recebe o TelaAgendaViewModel
-        ChangeNotifierProxyProvider<TelaAgendaViewModel, InicialViewModel>(
-          create: (context) {
-            final agendaVM =
-            Provider.of<TelaAgendaViewModel>(context, listen: false);
-            return InicialViewModel(agendaVM);
-          },
-          update: (context, agendaVM, inicialAnterior) {
-            // Se já existir, reaproveita; se não, cria com o agendaVM
-            return inicialAnterior ?? InicialViewModel(agendaVM);
-          },
-        ),
+        ChangeNotifierProvider(create: (context) => AuthViewModel(AuthService())),
+        ChangeNotifierProvider(create: (context) => SensorViewModel()), // Adicionado
       ],
       child: const MyApp(),
     ),
