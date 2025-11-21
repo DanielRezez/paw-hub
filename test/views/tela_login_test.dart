@@ -8,7 +8,7 @@ import 'package:projeto_integrador2/viewmodels/auth_viewmodel.dart';
 import 'package:projeto_integrador2/viewmodels/login_viewmodel.dart';
 
 void main() {
-  // 🔑 Inicializa o binding para permitir uso de GlobalKey<FormState>
+  // Inicializa o binding para permitir uso de GlobalKey<FormState>
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MockAuthViewModel mockAuthViewModel;

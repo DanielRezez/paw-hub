@@ -96,7 +96,6 @@ void main() {
       final mockAuth = MockAuthViewModel();
       when(mockAuth.status).thenReturn(AuthStatus.unauthenticated);
       when(mockAuth.signUp('novo@teste.com', '123456')).thenAnswer((_) async => true);
-      // Após sucesso, a tela mostra SnackBar e faz pop; manter status consistente:
       when(mockAuth.status).thenReturn(AuthStatus.authenticated);
 
       await pumpTelaCadastro(tester, mockAuth: mockAuth);
@@ -106,7 +105,7 @@ void main() {
       await tester.enterText(confirmPasswordField(), '123456');
 
       await tester.tap(cadastrarButton());
-      await tester.pump(); // processa submit e SnackBar
+      await tester.pump();
 
       verify(mockAuth.signUp('novo@teste.com', '123456')).called(1);
       expect(find.text('Cadastro realizado com sucesso! Faça o login.'), findsOneWidget);
