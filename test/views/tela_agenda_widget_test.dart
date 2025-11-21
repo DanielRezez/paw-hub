@@ -68,30 +68,40 @@ void main() {
     testWidgets('Alterar quantidade atualiza o ViewModel', (tester) async {
       viewModel.adicionarNovaRefeicao();
       await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pump();
+      await tester.pumpAndSettle();
 
-      final campo = find.byType(TextFormField);
-      expect(campo, findsOneWidget);
+      final campoQuantidade = find.byKey(const Key('refeicao_0_quantidade'));
+      expect(campoQuantidade, findsOneWidget);
 
-      await tester.enterText(campo, '250g');
-      await tester.pump();
+      await tester.enterText(campoQuantidade, '250g');
+      await tester.pumpAndSettle();
 
-      expect(viewModel.perfilHorarios[0].quantidade, '250g');
+      expect(viewModel.perfilHorarios[0].quantidadeRacao, '250g');
     });
+
 
     testWidgets('Alterar Switch chama toggleAtivacaoRefeicao', (tester) async {
       viewModel.adicionarNovaRefeicao();
       await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pump();
+      await tester.pumpAndSettle();
 
-      final switchWidget = find.byType(Switch);
+      // Encontra o Card que contém o texto 'Refeição 1'
+      final cardRefeicao = find.widgetWithText(Card, 'Refeição 1');
+      expect(cardRefeicao, findsOneWidget);
 
+      // Encontra o Switch dentro desse Card
+      final switchWidget = find.descendant(
+        of: cardRefeicao,
+        matching: find.byType(Switch),
+      );
       expect(switchWidget, findsOneWidget);
+
+      // Estado inicial
       expect(viewModel.perfilHorarios[0].ativa, true);
 
       // Toca no switch
       await tester.tap(switchWidget);
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(viewModel.perfilHorarios[0].ativa, false);
     });

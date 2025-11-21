@@ -129,21 +129,21 @@ class TelaAgenda extends StatelessWidget {
 
                         // ======= QUANTIDADE RAÇÃO =======
                         TextFormField(
+                          key: Key('refeicao_${index}_quantidade'),
                           initialValue: refeicao.quantidadeRacao,
                           decoration: const InputDecoration(
                             labelText: 'Quantidade de ração',
                             hintText: 'ex: 50g, 1 porção',
                             border: OutlineInputBorder(),
                             isDense: true,
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 12),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                           ),
                           keyboardType: TextInputType.text,
                           onChanged: (novaQuantidade) {
-                            viewModel.atualizarQuantidadeRacaoRefeicao(
-                                index, novaQuantidade);
+                            viewModel.atualizarQuantidadeRacaoRefeicao(index, novaQuantidade);
                           },
                         ),
+
                         const SizedBox(height: 8),
 
                         TextFormField(

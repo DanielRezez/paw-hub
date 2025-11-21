@@ -44,8 +44,8 @@ void main() {
       viewModel.adicionarNovaRefeicao();
       viewModel.adicionarNovaRefeicao();
 
-      viewModel.perfilHorarios[0].quantidade = "150g";
-      viewModel.perfilHorarios[1].quantidade = "200g";
+      viewModel.perfilHorarios[0].quantidadeRacao = "150g";
+      viewModel.perfilHorarios[1].quantidadeRacao = "200g";
 
       final sucesso = await viewModel.salvarPerfil();
       expect(sucesso, true);
@@ -73,7 +73,7 @@ void main() {
       await Future.delayed(Duration.zero);
 
       expect(viewModel.perfilHorarios.length, 1);
-      expect(viewModel.perfilHorarios[0].quantidade, '180g');
+      expect(viewModel.perfilHorarios[0].quantidadeRacao, '180g');
       expect(viewModel.perfilHorarios[0].horario.hour, 10);
       expect(viewModel.perfilHorarios[0].horario.minute, 30);
       expect(viewModel.perfilHorarios[0].ativa, true);
