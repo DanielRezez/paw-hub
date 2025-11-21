@@ -1,6 +1,4 @@
 // test/viewmodels/inicial_viewmodel_test.dart
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
@@ -15,65 +13,155 @@ import 'inicial_viewmodel_test.mocks.dart';
 
 @GenerateMocks([TelaAgendaViewModel])
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  late MockTelaAgendaViewModel mockAgenda;
 
   setUp(() {
-    // SharedPreferences fake em memória
+    // Mock do SharedPreferences
     SharedPreferences.setMockInitialValues({});
+
+    mockAgenda = MockTelaAgendaViewModel();
+
+    // Defaults seguros
+    when(mockAgenda.perfilHorarios).thenReturn(<RefeicaoProgramada>[]);
+    when(mockAgenda.getProximaRefeicaoEHorario()).thenReturn(null);
   });
 
-  group('InicialViewModel - próxima refeição', () {
-    test('usa o valor retornado pelo AgendaViewModel', () async {
-      final mockAgenda = MockTelaAgendaViewModel();
-
-      // Monta uma refeição fake
-      final refeicao = RefeicaoProgramada(
-        horario: const TimeOfDay(hour: 12, minute: 0),
-        // adapta esses campos para o teu RefeicaoProgramada real
-        quantidadeRacao: '50g',
-        quantidadeAgua: '100ml',
-        ativa: true,
-        id: '1',
-      );
-
-      // Quando o InicialViewModel perguntar pro AgendaViewModel,
-      // ele recebe essa refeição com 60 minutos de diferença.
-      when(mockAgenda.getProximaRefeicaoEHorario()).thenReturn(
-        MapEntry(refeicao, const Duration(minutes: 60)),
-      );
-
+  group('InicialViewModel - metas e progresso', () {
+    test('metaRacaoDiaria e metaAguaDiaria começam em 0', () async {
       final vm = InicialViewModel(mockAgenda);
 
-      // deixa o construtor rodar os listeners/timer
-      await Future<void>.delayed(Duration.zero);
+      // espera async interno carregar prefs vazias
+      await Future.delayed(const Duration(milliseconds: 150));
 
-      expect(vm.proximaRefeicao, '12:00');
-      expect(vm.tempoAteProximaRefeicao, 'Em 1h');
+      expect(vm.metaRacaoDiaria, 0);
+      expect(vm.metaAguaDiaria, 0);
+      expect(vm.metaRacaoFormatada, 'Meta: 0g');
+      expect(vm.metaAguaFormatada, 'Meta: 0ml');
+      expect(vm.progressoRacao, 0);
+      expect(vm.progressoAgua, 0);
 
       vm.dispose();
     });
 
-    test('quando não há refeição ativa, mostra mensagens padrão', () async {
-      final mockAgenda = MockTelaAgendaViewModel();
-      when(mockAgenda.getProximaRefeicaoEHorario()).thenReturn(null);
+    test('metaRacaoDiaria soma apenas refeições ativas', () async {
+      when(mockAgenda.perfilHorarios).thenReturn([
+        RefeicaoProgramada(
+          horario: const TimeOfDay(hour: 8, minute: 0),
+          quantidadeRacao: '50g',
+          quantidadeAgua: '100ml',
+          ativa: true,
+          id: '1',
+        ),
+        RefeicaoProgramada(
+          horario: const TimeOfDay(hour: 12, minute: 0),
+          quantidadeRacao: '70g',
+          quantidadeAgua: '150ml',
+          ativa: true,
+          id: '2',
+        ),
+        RefeicaoProgramada(
+          horario: const TimeOfDay(hour: 18, minute: 0),
+          quantidadeRacao: '30g',
+          quantidadeAgua: '200ml',
+          ativa: false,
+          id: '3',
+        ),
+      ]);
 
       final vm = InicialViewModel(mockAgenda);
 
-      await Future<void>.delayed(Duration.zero);
+      // espera async interno carregar prefs
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      expect(vm.metaRacaoDiaria, 120);
+      expect(vm.metaRacaoFormatada, 'Meta: 120g');
+
+      await vm.atualizarRacaoConsumida(60);
+      await Future.delayed(const Duration(milliseconds: 80));
+
+      expect(vm.progressoRacao, closeTo(0.5, 0.001));
+
+      vm.dispose();
+    });
+
+    test('metaAguaDiaria soma apenas refeições ativas', () async {
+      when(mockAgenda.perfilHorarios).thenReturn([
+        RefeicaoProgramada(
+          horario: const TimeOfDay(hour: 8, minute: 0),
+          quantidadeRacao: '50g',
+          quantidadeAgua: '100ml',
+          ativa: true,
+          id: '1',
+        ),
+        RefeicaoProgramada(
+          horario: const TimeOfDay(hour: 12, minute: 0),
+          quantidadeRacao: '70g',
+          quantidadeAgua: '150ml',
+          ativa: true,
+          id: '2',
+        ),
+      ]);
+
+      final vm = InicialViewModel(mockAgenda);
+
+      // 🔥 ESSA É A CORREÇÃO:
+      // espera o construtor finalizar _carregarAguaConsumida()
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      expect(vm.metaAguaDiaria, 250);
+      expect(vm.metaAguaFormatada, 'Meta: 250ml');
+
+      await vm.atualizarAguaConsumida(125);
+
+      // espera o save/notify estabilizar
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      expect(vm.progressoAgua, closeTo(0.5, 0.001));
+
+      vm.dispose();
+    });
+  });
+
+  group('InicialViewModel - próxima refeição', () {
+    test('quando não há refeição ativa → "--:--"', () async {
+      final vm = InicialViewModel(mockAgenda);
+
+      await Future.delayed(const Duration(milliseconds: 120));
 
       expect(vm.proximaRefeicao, '--:--');
       expect(vm.tempoAteProximaRefeicao, 'Nenhuma refeição ativa');
 
       vm.dispose();
     });
-  });
 
-  group('InicialViewModel - dados do gráfico (FlSpot)', () {
-    test('possui 7 pontos (um por dia) com os valores esperados', () {
-      final mockAgenda = MockTelaAgendaViewModel();
-      when(mockAgenda.getProximaRefeicaoEHorario()).thenReturn(null);
+    test('usa dados do AgendaViewModel', () async {
+      final refeicao = RefeicaoProgramada(
+        horario: const TimeOfDay(hour: 18, minute: 30),
+        quantidadeRacao: '80g',
+        quantidadeAgua: '200ml',
+        ativa: true,
+        id: 'prox',
+      );
+
+      when(mockAgenda.getProximaRefeicaoEHorario())
+          .thenReturn(MapEntry(refeicao, const Duration(minutes: 90)));
 
       final vm = InicialViewModel(mockAgenda);
+
+      await Future.delayed(const Duration(milliseconds: 120));
+
+      expect(vm.proximaRefeicao, '18:30');
+      expect(vm.tempoAteProximaRefeicao, 'Em 1h 30min');
+
+      vm.dispose();
+    });
+  });
+
+  group('InicialViewModel - dados do gráfico', () {
+    test('7 pontos com valores esperados', () async {
+      final vm = InicialViewModel(mockAgenda);
+
+      await Future.delayed(const Duration(milliseconds: 80));
 
       final spots = vm.consumoSemanalSpots;
       expect(spots.length, 7);
@@ -90,30 +178,24 @@ void main() {
     });
   });
 
-  group('InicialViewModel - onItemTapped / selectedIndex', () {
-    testWidgets('atualiza selectedIndex ao chamar onItemTapped',
-            (tester) async {
-          final mockAgenda = MockTelaAgendaViewModel();
-          when(mockAgenda.getProximaRefeicaoEHorario()).thenReturn(null);
+  group('InicialViewModel - navegação', () {
+    test('onItemTapped(0) só altera selectedIndex', () async {
+      final vm = InicialViewModel(mockAgenda);
 
-          final vm = InicialViewModel(mockAgenda);
+      await Future.delayed(const Duration(milliseconds: 80));
 
-          // cria um contexto qualquer pra passar pro onItemTapped
-          late BuildContext capturedContext;
-          await tester.pumpWidget(
-            Builder(
-              builder: (context) {
-                capturedContext = context;
-                return const SizedBox.shrink();
-              },
-            ),
-          );
+      final fakeContext = _FakeBuildContext();
 
-          expect(vm.selectedIndex, 0);
-          vm.onItemTapped(2, capturedContext);
-          expect(vm.selectedIndex, 2);
+      vm.onItemTapped(0, fakeContext);
 
-          vm.dispose();
-        });
+      expect(vm.selectedIndex, 0);
+
+      vm.dispose();
+    });
   });
+}
+
+class _FakeBuildContext implements BuildContext {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => null;
 }

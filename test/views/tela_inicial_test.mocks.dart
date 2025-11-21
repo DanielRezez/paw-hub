@@ -3,15 +3,12 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i6;
-import 'dart:ui' as _i8;
+import 'dart:async' as _i3;
+import 'dart:ui' as _i5;
 
-import 'package:fl_chart/fl_chart.dart' as _i5;
-import 'package:flutter/material.dart' as _i7;
+import 'package:flutter/material.dart' as _i4;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i4;
 import 'package:projeto_integrador2/viewmodels/agenda_viewmodel.dart' as _i2;
-import 'package:projeto_integrador2/viewmodels/inicial_viewmodel.dart' as _i3;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -28,145 +25,22 @@ import 'package:projeto_integrador2/viewmodels/inicial_viewmodel.dart' as _i3;
 // ignore_for_file: subtype_of_sealed_class
 // ignore_for_file: invalid_use_of_internal_member
 
-class _FakeTelaAgendaViewModel_0 extends _i1.SmartFake
-    implements _i2.TelaAgendaViewModel {
-  _FakeTelaAgendaViewModel_0(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-/// A class which mocks [InicialViewModel].
+/// A class which mocks [TelaAgendaViewModel].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockInicialViewModel extends _i1.Mock implements _i3.InicialViewModel {
-  MockInicialViewModel() {
+class MockTelaAgendaViewModel extends _i1.Mock
+    implements _i2.TelaAgendaViewModel {
+  MockTelaAgendaViewModel() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i2.TelaAgendaViewModel get agendaViewModel =>
+  List<_i2.RefeicaoProgramada> get perfilHorarios =>
       (super.noSuchMethod(
-            Invocation.getter(#agendaViewModel),
-            returnValue: _FakeTelaAgendaViewModel_0(
-              this,
-              Invocation.getter(#agendaViewModel),
-            ),
+            Invocation.getter(#perfilHorarios),
+            returnValue: <_i2.RefeicaoProgramada>[],
           )
-          as _i2.TelaAgendaViewModel);
-
-  @override
-  int get selectedIndex =>
-      (super.noSuchMethod(Invocation.getter(#selectedIndex), returnValue: 0)
-          as int);
-
-  @override
-  double get metaAguaDiaria =>
-      (super.noSuchMethod(Invocation.getter(#metaAguaDiaria), returnValue: 0.0)
-          as double);
-
-  @override
-  String get aguaConsumidaFormatada =>
-      (super.noSuchMethod(
-            Invocation.getter(#aguaConsumidaFormatada),
-            returnValue: _i4.dummyValue<String>(
-              this,
-              Invocation.getter(#aguaConsumidaFormatada),
-            ),
-          )
-          as String);
-
-  @override
-  String get metaAguaFormatada =>
-      (super.noSuchMethod(
-            Invocation.getter(#metaAguaFormatada),
-            returnValue: _i4.dummyValue<String>(
-              this,
-              Invocation.getter(#metaAguaFormatada),
-            ),
-          )
-          as String);
-
-  @override
-  double get progressoAgua =>
-      (super.noSuchMethod(Invocation.getter(#progressoAgua), returnValue: 0.0)
-          as double);
-
-  @override
-  double get aguaConsumidaHoje =>
-      (super.noSuchMethod(
-            Invocation.getter(#aguaConsumidaHoje),
-            returnValue: 0.0,
-          )
-          as double);
-
-  @override
-  double get metaRacaoDiaria =>
-      (super.noSuchMethod(Invocation.getter(#metaRacaoDiaria), returnValue: 0.0)
-          as double);
-
-  @override
-  String get racaoConsumidaFormatada =>
-      (super.noSuchMethod(
-            Invocation.getter(#racaoConsumidaFormatada),
-            returnValue: _i4.dummyValue<String>(
-              this,
-              Invocation.getter(#racaoConsumidaFormatada),
-            ),
-          )
-          as String);
-
-  @override
-  String get metaRacaoFormatada =>
-      (super.noSuchMethod(
-            Invocation.getter(#metaRacaoFormatada),
-            returnValue: _i4.dummyValue<String>(
-              this,
-              Invocation.getter(#metaRacaoFormatada),
-            ),
-          )
-          as String);
-
-  @override
-  double get progressoRacao =>
-      (super.noSuchMethod(Invocation.getter(#progressoRacao), returnValue: 0.0)
-          as double);
-
-  @override
-  double get racaoConsumidaHoje =>
-      (super.noSuchMethod(
-            Invocation.getter(#racaoConsumidaHoje),
-            returnValue: 0.0,
-          )
-          as double);
-
-  @override
-  String get proximaRefeicao =>
-      (super.noSuchMethod(
-            Invocation.getter(#proximaRefeicao),
-            returnValue: _i4.dummyValue<String>(
-              this,
-              Invocation.getter(#proximaRefeicao),
-            ),
-          )
-          as String);
-
-  @override
-  String get tempoAteProximaRefeicao =>
-      (super.noSuchMethod(
-            Invocation.getter(#tempoAteProximaRefeicao),
-            returnValue: _i4.dummyValue<String>(
-              this,
-              Invocation.getter(#tempoAteProximaRefeicao),
-            ),
-          )
-          as String);
-
-  @override
-  List<_i5.FlSpot> get consumoSemanalSpots =>
-      (super.noSuchMethod(
-            Invocation.getter(#consumoSemanalSpots),
-            returnValue: <_i5.FlSpot>[],
-          )
-          as List<_i5.FlSpot>);
+          as List<_i2.RefeicaoProgramada>);
 
   @override
   bool get hasListeners =>
@@ -174,45 +48,82 @@ class MockInicialViewModel extends _i1.Mock implements _i3.InicialViewModel {
           as bool);
 
   @override
-  _i6.Future<void> atualizarRacaoConsumida(double? novoValor) =>
+  _i3.Future<void> carregarPerfil() =>
       (super.noSuchMethod(
-            Invocation.method(#atualizarRacaoConsumida, [novoValor]),
-            returnValue: _i6.Future<void>.value(),
-            returnValueForMissingStub: _i6.Future<void>.value(),
+            Invocation.method(#carregarPerfil, []),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
           )
-          as _i6.Future<void>);
+          as _i3.Future<void>);
 
   @override
-  _i6.Future<void> atualizarAguaConsumida(double? novoValor) =>
+  _i3.Future<bool> salvarPerfil() =>
       (super.noSuchMethod(
-            Invocation.method(#atualizarAguaConsumida, [novoValor]),
-            returnValue: _i6.Future<void>.value(),
-            returnValueForMissingStub: _i6.Future<void>.value(),
+            Invocation.method(#salvarPerfil, []),
+            returnValue: _i3.Future<bool>.value(false),
           )
-          as _i6.Future<void>);
+          as _i3.Future<bool>);
 
   @override
-  void onItemTapped(int? index, _i7.BuildContext? context) =>
-      super.noSuchMethod(
-        Invocation.method(#onItemTapped, [index, context]),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void dispose() => super.noSuchMethod(
-    Invocation.method(#dispose, []),
+  void adicionarNovaRefeicao() => super.noSuchMethod(
+    Invocation.method(#adicionarNovaRefeicao, []),
     returnValueForMissingStub: null,
   );
 
   @override
-  void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+  void removerRefeicaoDefinitivamente(int? index) => super.noSuchMethod(
+    Invocation.method(#removerRefeicaoDefinitivamente, [index]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void atualizarHorarioRefeicao(int? index, _i4.TimeOfDay? novoHorario) =>
+      super.noSuchMethod(
+        Invocation.method(#atualizarHorarioRefeicao, [index, novoHorario]),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void atualizarQuantidadeRacaoRefeicao(int? index, String? novaQuantidade) =>
+      super.noSuchMethod(
+        Invocation.method(#atualizarQuantidadeRacaoRefeicao, [
+          index,
+          novaQuantidade,
+        ]),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void atualizarQuantidadeAguaRefeicao(int? index, String? novaQuantidade) =>
+      super.noSuchMethod(
+        Invocation.method(#atualizarQuantidadeAguaRefeicao, [
+          index,
+          novaQuantidade,
+        ]),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleAtivacaoRefeicao(int? index) => super.noSuchMethod(
+    Invocation.method(#toggleAtivacaoRefeicao, [index]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void addListener(_i5.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#addListener, [listener]),
     returnValueForMissingStub: null,
   );
 
   @override
-  void removeListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i5.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#removeListener, [listener]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void dispose() => super.noSuchMethod(
+    Invocation.method(#dispose, []),
     returnValueForMissingStub: null,
   );
 

@@ -146,7 +146,6 @@ class TelaAgenda extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
 
-                        // ======= QUANTIDADE ÁGUA =======
                         TextFormField(
                           initialValue: refeicao.quantidadeAgua,
                           decoration: const InputDecoration(

@@ -13,7 +13,6 @@ import 'auth_viewmodel.dart';
 import 'configuracoes_viewmodel.dart';
 
 class InicialViewModel extends ChangeNotifier {
-  // chaves pro SharedPreferences
   static const String _keyRacaoConsumidaHoje = 'racao_consumida_hoje';
   static const String _keyAguaConsumidaHoje = 'agua_consumida_hoje';
 
@@ -81,7 +80,6 @@ class InicialViewModel extends ChangeNotifier {
 
   double get aguaConsumidaHoje => _aguaConsumidaHoje;
 
-  // ===== RAÇÃO =====
 
   double get metaRacaoDiaria {
     double total = 0;
@@ -102,8 +100,6 @@ class InicialViewModel extends ChangeNotifier {
       metaRacaoDiaria <= 0 ? 0 : _racaoConsumidaHoje / metaRacaoDiaria;
 
   double get racaoConsumidaHoje => _racaoConsumidaHoje;
-
-  // ===== Próxima refeição =====
 
   String get proximaRefeicao {
     if (_proximaRefeicao == null) return '--:--';
@@ -178,8 +174,6 @@ class InicialViewModel extends ChangeNotifier {
     await prefs.setDouble(_keyAguaConsumidaHoje, _aguaConsumidaHoje);
   }
 
-  // ===== Navegação =====
-
   void onItemTapped(int index, BuildContext context) {
     if (_selectedIndex != index) {
       _selectedIndex = index;
@@ -226,8 +220,6 @@ class InicialViewModel extends ChangeNotifier {
         print("Índice de item desconhecido: $index");
     }
   }
-
-  // ===== Helper pra extrair número de strings tipo "50g" ou "200ml" =====
 
   double _parseNumero(String texto) {
     final regex = RegExp(r'(\d+(\,\d+)?(\.\d+)?)');
