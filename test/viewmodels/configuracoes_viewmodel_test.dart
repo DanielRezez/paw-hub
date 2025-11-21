@@ -14,7 +14,7 @@ void main() {
 
   Future<ConfiguracoesViewModel> createViewModel() async {
     final vm = ConfiguracoesViewModel(mockAuth);
-    await Future.delayed(Duration.zero); // deixa _loadPreferences rodar
+    await Future.delayed(Duration.zero);
     return vm;
   }
 
