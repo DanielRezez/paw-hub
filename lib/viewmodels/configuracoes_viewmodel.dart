@@ -55,10 +55,8 @@ class ConfiguracoesViewModel extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(kNotificationsEnabledPrefKey, _notificationsEnabled);
       print("Preferência de notificações salva: $_notificationsEnabled");
-      // Aqui você pode adicionar lógica para ativar/desativar notificações no sistema
     } catch (e) {
       print("Erro ao salvar preferência de notificações: $e");
-      // Considere reverter o estado da UI ou notificar o usuário
     }
   }
 
@@ -66,6 +64,5 @@ class ConfiguracoesViewModel extends ChangeNotifier {
     print("ViewModel: Solicitando logout ao AuthViewModel...");
 
     await _authViewModel.signOutAll();
-    // O Wrapper cuidará do redirecionamento
   }
 }
