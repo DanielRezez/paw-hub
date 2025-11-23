@@ -9,7 +9,7 @@ import 'package:projeto_integrador2/viewmodels/sensor_viewmodel.dart';
 import 'package:projeto_integrador2/viewmodels/agenda_viewmodel.dart';
 import 'package:projeto_integrador2/viewmodels/inicial_viewmodel.dart';
 
-// --- ATENÇÃO ---
+// tema
 import 'package:projeto_integrador2/utils/cores.dart';
 import 'package:projeto_integrador2/utils/tipografia.dart';
 
@@ -21,8 +21,28 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => AuthViewModel(AuthService())),
-        ChangeNotifierProvider(create: (context) => SensorViewModel()), // Adicionado
+        // ✅ Auth (igual tu tinha)
+        ChangeNotifierProvider(
+          create: (_) => AuthViewModel(AuthService()),
+        ),
+
+        // ✅ Sensor (igual tu tinha)
+        ChangeNotifierProvider(
+          create: (_) => SensorViewModel(),
+        ),
+
+        // ✅ Agenda (novo)
+        ChangeNotifierProvider(
+          create: (_) => TelaAgendaViewModel(),
+        ),
+
+        // ✅ Inicial depende da Agenda → ProxyProvider
+        ChangeNotifierProxyProvider<TelaAgendaViewModel, InicialViewModel>(
+          create: (ctx) =>
+              InicialViewModel(ctx.read<TelaAgendaViewModel>()),
+          update: (ctx, agendaVM, oldVM) =>
+          oldVM ?? InicialViewModel(agendaVM),
+        ),
       ],
       child: const MyApp(),
     ),
@@ -52,7 +72,7 @@ class MyApp extends StatelessWidget {
           foregroundColor: corBrancoPuro,
         ),
       ),
-      home: Wrapper(),
+      home: const Wrapper(),
     );
   }
 }
