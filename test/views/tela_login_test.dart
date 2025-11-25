@@ -2,6 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+import 'package:provider/provider.dart';
+import 'package:projeto_integrador2/views/tela_login.dart';
+
 
 import '../mocks/login.mocks.mocks.dart';
 import 'package:projeto_integrador2/viewmodels/auth_viewmodel.dart';
@@ -132,6 +135,109 @@ void main() {
       expect(result, false);
       expect(mockAuthViewModel.status, AuthStatus.error);
       expect(mockAuthViewModel.errorMessage, 'Erro inesperado');
+    });
+  });
+
+  group('TelaLogin Widget Tests', () {
+    late MockAuthViewModel mockAuthViewModel;
+    late MockLoginViewModel mockLoginViewModel;
+
+    setUp(() {
+      mockAuthViewModel = MockAuthViewModel();
+      mockLoginViewModel = MockLoginViewModel();
+      // Estado padrão para a maioria dos testes
+      when(mockAuthViewModel.status).thenReturn(AuthStatus.unauthenticated);
+    });
+
+    // Função auxiliar para criar o widget com os providers mocados
+    Future<void> _createWidget(WidgetTester tester) async {
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<AuthViewModel>.value(value: mockAuthViewModel),
+            ChangeNotifierProvider<LoginViewModel>.value(value: mockLoginViewModel),
+          ],
+          child: const MaterialApp(
+            home: TelaLogin(),
+          ),
+        ),
+      );
+    }
+
+    testWidgets('deve renderizar os campos de e-mail e senha', (tester) async {
+      await _createWidget(tester);
+      
+      // Procura por TextFormFields com os rótulos específicos
+      expect(find.widgetWithText(TextFormField, 'E-mail'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Senha'), findsOneWidget);
+    });
+
+    testWidgets('deve mostrar erros de validação para campos vazios e e-mail inválido', (tester) async {
+      // Arrange: Usa um LoginViewModel REAL para que a lógica de validação seja executada.
+      // O teste original falhava porque o mock do LoginViewModel não chamava a validação do formulário.
+      final realLoginViewModel = LoginViewModel(mockAuthViewModel);
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<AuthViewModel>.value(value: mockAuthViewModel),
+            ChangeNotifierProvider<LoginViewModel>.value(value: realLoginViewModel),
+          ],
+          child: const MaterialApp(
+            home: TelaLogin(),
+          ),
+        ),
+      );
+      
+      // Act: Tenta submeter com campos vazios.
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Entrar'));
+      await tester.pumpAndSettle();
+
+      // Assert: Verifica se as mensagens de erro para campos vazios aparecem.
+      expect(find.text('Por favor, insira seu e-mail.'), findsOneWidget);
+      expect(find.text('Por favor, insira sua senha.'), findsOneWidget);
+
+      // Act 2: Insere um e-mail inválido.
+      await tester.enterText(find.widgetWithText(TextFormField, 'E-mail'), 'emailinvalido');
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Entrar'));
+      await tester.pumpAndSettle();
+
+      // Assert 2: Verifica se a mensagem de e-mail inválido aparece. A de senha também, pois o campo continua vazio.
+      expect(find.text('Por favor, insira um e-mail válido.'), findsOneWidget);
+      expect(find.text('Por favor, insira sua senha.'), findsOneWidget);
+    });
+
+
+    testWidgets('deve exibir CircularProgressIndicator quando o status for authenticating', (tester) async {
+      // Configura o estado do mock
+      when(mockAuthViewModel.status).thenReturn(AuthStatus.authenticating);
+
+      await _createWidget(tester);
+      await tester.pump(); // Reconstrói o widget com o novo estado
+
+      // Verifica a presença do indicador e a ausência do botão
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.widgetWithText(ElevatedButton, 'Entrar'), findsNothing);
+    });
+
+    testWidgets('deve chamar signInWithEmailAndPassword ao clicar em Entrar com dados válidos', (tester) async {
+      await _createWidget(tester);
+
+      // Preenche os campos com dados válidos
+      await tester.enterText(find.widgetWithText(TextFormField, 'E-mail'), 'teste@teste.com');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Senha'), '123456');
+
+      // Toca no botão de entrar
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Entrar'));
+      await tester.pump();
+
+      // Verifica se o método do ViewModel foi chamado com os argumentos corretos
+      verify(mockLoginViewModel.signInWithEmailAndPassword(
+        formKey: anyNamed('formKey'),
+        email: 'teste@teste.com',
+        password: '123456',
+        showErrorSnackBar: anyNamed('showErrorSnackBar'),
+      )).called(1);
     });
   });
 }
