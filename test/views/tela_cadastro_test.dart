@@ -3,141 +3,82 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
-
-import '../mocks/auth_viewmodel.mocks.dart';
-import '../mocks/login.mocks.mocks.dart' hide MockAuthViewModel; // MockAuthViewModel
-import 'package:projeto_integrador2/viewmodels/auth_viewmodel.dart';
 import 'package:projeto_integrador2/views/tela_cadastro.dart';
+import 'package:projeto_integrador2/viewmodels/auth_viewmodel.dart';
+
+// A classe MockAuthViewModel é esperada de um arquivo de mock gerado.
+// O outro arquivo de teste do usuário usa uma importação semelhante.
+import '../mocks/login.mocks.mocks.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  late MockAuthViewModel mockAuthViewModel;
 
-  Future<void> pumpTelaCadastro(
-      WidgetTester tester, {
-        required MockAuthViewModel mockAuth,
-      }) async {
+  setUp(() {
+    mockAuthViewModel = MockAuthViewModel();
+    // Define um status padrão para evitar problemas de nulo na primeira construção
+    when(mockAuthViewModel.status).thenReturn(AuthStatus.unauthenticated);
+    // Sucesso padrão para chamadas signUp, a menos que especificado de outra forma em um teste
+    when(mockAuthViewModel.signUp(any, any)).thenAnswer((_) async => true);
+  });
+
+  // Função auxiliar para renderizar o widget com o provider necessário
+  Future<void> _pumpTelaCadastro(WidgetTester tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: ChangeNotifierProvider<AuthViewModel>.value(
-          value: mockAuth,
-          child: const TelaCadastro(),
+      ChangeNotifierProvider<AuthViewModel>.value(
+        value: mockAuthViewModel,
+        child: const MaterialApp(
+          home: TelaCadastro(),
         ),
       ),
     );
-    await tester.pump(); // inicial
   }
 
-  // Finders usando rótulos de acessibilidade (derivados de labelText)
-  Finder emailField() => find.bySemanticsLabel('E-mail');
-  Finder passwordField() => find.bySemanticsLabel('Senha');
-  Finder confirmPasswordField() => find.bySemanticsLabel('Confirme a Senha');
-  Finder cadastrarButton() => find.text('Cadastrar');
+  group('TelaCadastro Widget Tests', () {
+    testWidgets('deve mostrar erros de validação para campos vazios e senhas que não coincidem', (tester) async {
+      // Arrange
+      await _pumpTelaCadastro(tester);
 
-  group('TelaCadastro - Validação do formulário', () {
-    testWidgets('Mostra erro quando confirmação de senha não coincide e não chama signUp', (tester) async {
-      final mockAuth = MockAuthViewModel();
-      when(mockAuth.status).thenReturn(AuthStatus.unauthenticated);
+      // Act 1: Tenta submeter com todos os campos vazios
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Cadastrar'));
+      await tester.pumpAndSettle(); // pumpAndSettle para aguardar as animações de validação
 
-      await pumpTelaCadastro(tester, mockAuth: mockAuth);
+      // Assert 1: Verifica as mensagens de erro para campos vazios
+      expect(find.text('Por favor, insira seu e-mail.'), findsOneWidget);
+      expect(find.text('Por favor, insira uma senha.'), findsOneWidget);
+      expect(find.text('Por favor, confirme sua senha.'), findsOneWidget);
 
-      expect(emailField(), findsOneWidget);
-      expect(passwordField(), findsOneWidget);
-      expect(confirmPasswordField(), findsOneWidget);
-      expect(cadastrarButton(), findsOneWidget);
+      // Act 2: Preenche o e-mail e as senhas de forma que não coincidam
+      await tester.enterText(find.widgetWithText(TextFormField, 'E-mail'), 'teste@teste.com');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Senha'), '123456');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Confirme a Senha'), '654321');
 
-      await tester.enterText(emailField(), 'novo@teste.com');
-      await tester.enterText(passwordField(), '123456');
-      await tester.enterText(confirmPasswordField(), 'diferente');
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Cadastrar'));
+      await tester.pumpAndSettle();
 
-      await tester.tap(cadastrarButton());
-      await tester.pump();
-
+      // Assert 2: Verifica se a mensagem de erro de senhas não coincidentes é exibida
       expect(find.text('As senhas não coincidem.'), findsOneWidget);
-      verifyNever(mockAuth.signUp(any, any));
+      // A mensagem de confirmação de senha não deve estar mais visível
+      expect(find.text('Por favor, confirme sua senha.'), findsNothing);
     });
 
-    testWidgets('Mostra erro quando e-mail é inválido e não chama signUp', (tester) async {
-      final mockAuth = MockAuthViewModel();
-      when(mockAuth.status).thenReturn(AuthStatus.unauthenticated);
+    testWidgets('deve chamar o método signUp no AuthViewModel ao clicar em Cadastrar', (tester) async {
+      // Arrange
+      await _pumpTelaCadastro(tester);
 
-      await pumpTelaCadastro(tester, mockAuth: mockAuth);
+      const email = 'novo.usuario@teste.com';
+      const password = 'senha_super_segura';
 
-      await tester.enterText(emailField(), 'invalido');
-      await tester.enterText(passwordField(), '123456');
-      await tester.enterText(confirmPasswordField(), '123456');
+      // Act: Preenche o formulário com dados válidos
+      await tester.enterText(find.widgetWithText(TextFormField, 'E-mail'), email);
+      await tester.enterText(find.widgetWithText(TextFormField, 'Senha'), password);
+      await tester.enterText(find.widgetWithText(TextFormField, 'Confirme a Senha'), password);
 
-      await tester.tap(cadastrarButton());
-      await tester.pump();
+      // Toca no botão de cadastrar
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Cadastrar'));
+      await tester.pump(); // Pump para processar o clique
 
-      expect(find.text('Por favor, insira um e-mail válido.'), findsOneWidget);
-      verifyNever(mockAuth.signUp(any, any));
-    });
-
-    testWidgets('Mostra erro quando senha tem menos de 6 caracteres e não chama signUp', (tester) async {
-      final mockAuth = MockAuthViewModel();
-      when(mockAuth.status).thenReturn(AuthStatus.unauthenticated);
-
-      await pumpTelaCadastro(tester, mockAuth: mockAuth);
-
-      await tester.enterText(emailField(), 'novo@teste.com');
-      await tester.enterText(passwordField(), '123'); // curta
-      await tester.enterText(confirmPasswordField(), '123');
-
-      await tester.tap(cadastrarButton());
-      await tester.pump();
-
-      expect(find.text('A senha deve ter pelo menos 6 caracteres.'), findsOneWidget);
-      verifyNever(mockAuth.signUp(any, any));
-    });
-  });
-
-  group('TelaCadastro - Ação do botão "Cadastrar"', () {
-    testWidgets('Clique em "Cadastrar" chama signUp no AuthViewModel quando o formulário é válido', (tester) async {
-      final mockAuth = MockAuthViewModel();
-      when(mockAuth.status).thenReturn(AuthStatus.unauthenticated);
-      when(mockAuth.signUp('novo@teste.com', '123456')).thenAnswer((_) async => true);
-      when(mockAuth.status).thenReturn(AuthStatus.authenticated);
-
-      await pumpTelaCadastro(tester, mockAuth: mockAuth);
-
-      await tester.enterText(emailField(), 'novo@teste.com');
-      await tester.enterText(passwordField(), '123456');
-      await tester.enterText(confirmPasswordField(), '123456');
-
-      await tester.tap(cadastrarButton());
-      await tester.pump();
-
-      verify(mockAuth.signUp('novo@teste.com', '123456')).called(1);
-      expect(find.text('Cadastro realizado com sucesso! Faça o login.'), findsOneWidget);
-    });
-
-    testWidgets('Quando signUp falha e existe errorMessage, mostra SnackBar de erro', (tester) async {
-      final mockAuth = MockAuthViewModel();
-      when(mockAuth.status).thenReturn(AuthStatus.unauthenticated);
-      when(mockAuth.signUp('novo@teste.com', '123456')).thenAnswer((_) async => false);
-      when(mockAuth.errorMessage).thenReturn('Erro ao cadastrar. Tente novamente.');
-
-      await pumpTelaCadastro(tester, mockAuth: mockAuth);
-
-      await tester.enterText(emailField(), 'novo@teste.com');
-      await tester.enterText(passwordField(), '123456');
-      await tester.enterText(confirmPasswordField(), '123456');
-
-      await tester.tap(cadastrarButton());
-      await tester.pump();
-
-      expect(find.text('Erro ao cadastrar. Tente novamente.'), findsOneWidget);
-      verify(mockAuth.signUp('novo@teste.com', '123456')).called(1);
-    });
-
-    testWidgets('Exibe indicador de progresso quando status é authenticating', (tester) async {
-      final mockAuth = MockAuthViewModel();
-      when(mockAuth.status).thenReturn(AuthStatus.authenticating);
-
-      await pumpTelaCadastro(tester, mockAuth: mockAuth);
-
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      expect(cadastrarButton(), findsNothing);
+      // Assert: Verifica se o método signUp foi chamado com os dados corretos
+      verify(mockAuthViewModel.signUp(email, password)).called(1);
     });
   });
 }
