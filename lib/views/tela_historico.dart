@@ -12,6 +12,14 @@ class TelaHistorico extends StatelessWidget {
         backgroundColor: corOffWhite,
         appBar: AppBar(
           title: const Text('Histórico de Consumo'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context);
+              Provider.of<InicialViewModel>(context, listen: false)
+                  .setIndex(0); // 👈 força Home
+            },
+          ),
           backgroundColor: corBeringela,
           foregroundColor: corBrancoPuro,
           elevation: 0,

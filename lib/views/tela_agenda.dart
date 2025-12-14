@@ -10,6 +10,14 @@ class TelaAgenda extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Agenda'),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                Navigator.pop(context);
+                Provider.of<InicialViewModel>(context, listen: false)
+                    .setIndex(0); // 👈 força Home
+              },
+            ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.save),

@@ -11,6 +11,14 @@ class TelaConfiguracoes extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Configurações'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+            Provider.of<InicialViewModel>(context, listen: false)
+                .setIndex(0); // 👈 força Home
+          },
+        ),
       ),
       body: ListView(
         children: [

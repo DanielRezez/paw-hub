@@ -241,7 +241,7 @@ class TelaInicial extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Consumo Semanal',
+            'Consumo Semanal de ração',
             style: TextStyle(
                 color: corPretoAzulado,
                 fontSize: 18,

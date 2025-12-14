@@ -58,6 +58,11 @@ class InicialViewModel extends ChangeNotifier {
 
   int get selectedIndex => _selectedIndex;
 
+  void setIndex(int index) {
+    _selectedIndex = index;
+    notifyListeners();
+  }
+
   // ===== ÁGUA =====
 
   double get metaAguaDiaria {
@@ -175,50 +180,34 @@ class InicialViewModel extends ChangeNotifier {
   }
 
   void onItemTapped(int index, BuildContext context) {
-    if (_selectedIndex != index) {
-      _selectedIndex = index;
-      notifyListeners();
-    }
+    setIndex(index);
 
-    switch (index) {
-      case 0:
-        print("Item 'Visão Geral' selecionado.");
-        break;
-      case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const TelaAgenda(),
-          ),
-        );
-        break;
-      case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const TelaHistorico(),
-          ),
-        );
-        break;
-      case 3:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                ChangeNotifierProvider<ConfiguracoesViewModel>(
-                  create: (context) {
-                    final authViewModel =
-                    Provider.of<AuthViewModel>(context, listen: false);
-                    return ConfiguracoesViewModel(authViewModel);
-                  },
-                  child: const TelaConfiguracoes(),
-                ),
-          ),
-        );
-        break;
-      default:
-        print("Índice de item desconhecido: $index");
-    }
+    if (index == 0) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) {
+          switch (index) {
+            case 1:
+              return const TelaAgenda();
+            case 2:
+              return const TelaHistorico();
+            case 3:
+              return ChangeNotifierProvider<ConfiguracoesViewModel>(
+                create: (context) {
+                  final authViewModel =
+                  Provider.of<AuthViewModel>(context, listen: false);
+                  return ConfiguracoesViewModel(authViewModel);
+                },
+                child: const TelaConfiguracoes(),
+              );
+            default:
+              return const TelaAgenda();
+          }
+        },
+      ),
+    );
   }
 
   double _parseNumero(String texto) {
